@@ -1,0 +1,56 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "6.1.0"
+    id "com.diffplug.spotless" version "5.9.0"
+}
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+String build_number = System.getenv().BUILD_NUMBER
+if (build_number == null) {
+    build_number = "CustomBuild"
+} else {
+    build_number = "Jenkins-${build_number}"
+}
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+archivesBaseName = 'Clone-Backend'
+version = "${program_version}-${build_number}"
+
+dependencies {
+    // Libs
+    compile "com.boundary:high-scale-lib:${highscalelib_version}"
+    compile 'com.google.code.gson:gson:2.8.6'
+}
+
+shadowJar.archiveName = "${archivesBaseName}-${version}.jar"
+shadowJar {
+    dependencies {
+        include(dependency("com.boundary:high-scale-lib:${highscalelib_version}"))
+        include(dependency("com.google.code.gson:gson:${gson_version}"))
+    }
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        indentWithSpaces()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'clone.Main'
+        )
+    }
+}
+jar.finalizedBy('spotlessApply')
+jar.finalizedBy('shadowJar')
