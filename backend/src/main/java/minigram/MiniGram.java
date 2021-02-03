@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpServer;
 import minigram.models.Config;
+import minigram.sql.DatabaseController;
 import minigram.utils.AnnotationHelper;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class MiniGram {
     // Program vars
     public static Config config;
     public static HttpServer server;
+    public static DatabaseController controller;
 
     // Global Instances
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -54,6 +56,8 @@ public class MiniGram {
             System.err.println(e.getMessage());
             System.exit(-3);
         }
+        // Startup DB
+        controller = new DatabaseController(config.database);
     }
 
     public static Config loadConfig() {

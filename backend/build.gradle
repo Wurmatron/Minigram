@@ -21,6 +21,7 @@ dependencies {
     compile "net.oneandone.reflections8:reflections8:${reflections_version}"
     compile "org.javassist:javassist:${javassist_version}"
     compile "commons-io:commons-io:${apache_io_version}"
+    compile "mysql:mysql-connector-java:${mysql_connector_version}"
 }
 
 shadowJar.archiveName = "${archivesBaseName}.jar"
@@ -31,6 +32,7 @@ shadowJar {
         include(dependency("net.oneandone.reflections8:reflections8:${reflections_version}"))
         include(dependency("org.javassist:javassist:${javassist_version}"))
         include(dependency("commons-io:commons-io:${apache_io_version}"))
+        include(dependency("mysql:mysql-connector-java:${mysql_connector_version}"))
     }
 }
 
