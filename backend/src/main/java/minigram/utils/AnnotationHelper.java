@@ -11,7 +11,10 @@ import org.reflections8.scanners.MethodAnnotationsScanner;
 
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static minigram.MiniGram.config;
 
@@ -24,32 +27,26 @@ public class AnnotationHelper {
     private static final Reflections REFLECTIONS = new Reflections("minigram.endpoints", new MethodAnnotationsScanner());
 
     // Instance Cache
-    private static final NonBlockingHashMap<String, Object> invokeObjects = new NonBlockingHashMap<>();
+    private static final NonBlockingHashMap<Method, Object> invokeObjects = new NonBlockingHashMap<>();
 
-    private static Method[] getEndpoints() {
-        return REFLECTIONS.getMethodsAnnotatedWith(Endpoint.class).toArray(new Method[0]);
-    }
-
-    /**
-     * Returns a list of endpoints along with its function
-     *
-     * @return Endpoint (URL), Endpoint Method
-     */
-    public static NonBlockingHashMap<String, Method> getEndPoints() {
-        NonBlockingHashMap<String, Method> endpoints = new NonBlockingHashMap<>();
-        Method[] locatedEndpoints = getEndpoints();
-        for (Method method : locatedEndpoints) {
-            // Make sure its a valid
-            if (method.getAnnotation(Endpoint.class) != null && method.getAnnotation(Endpoint.class).endpoint().length() > 0 && isValidEndpoint(method)) {
-                endpoints.put(method.getAnnotation(Endpoint.class).endpoint(), method);
+    private static HashMap<String, List<Method>> getEndpoints() {
+        Method[] methods = REFLECTIONS.getMethodsAnnotatedWith(Endpoint.class).toArray(new Method[0]);
+        HashMap<String, List<Method>> sorted = new HashMap<>();
+        for (Method method : methods) {
+            if (!isValidEndpoint(method)) {
+                System.err.println("Invalid endpoint at '" + method.getDeclaringClass().getName() + "'");
+                continue;
+            }
+            if (sorted.containsKey(method.getAnnotation(Endpoint.class).endpoint())) {
+                sorted.get(method.getAnnotation(Endpoint.class).endpoint()).add(method);
             } else {
-                System.out.println("Error loading endpoint '" + method.getName() + "' within '" + method.getDeclaringClass().getName() + "'");
+                List<Method> m = new ArrayList<>();
+                m.add(method);
+                sorted.put(method.getAnnotation(Endpoint.class).endpoint(), m);
             }
         }
-        return endpoints;
+        return sorted;
     }
-
-    // TODO Implement checks
 
     /**
      * Checks if a given endpoint function is a valid endpoint
@@ -66,7 +63,7 @@ public class AnnotationHelper {
         }
         for (Class<?> clazz : method.getParameterTypes()) {
             for (Class<?> face : clazz.getInterfaces()) {
-                if(face != IModel.class) {
+                if (face != IModel.class) {
                     return false;
                 }
             }
@@ -79,17 +76,18 @@ public class AnnotationHelper {
      */
     public static void setup() {
         invokeObjects.clear();
-        NonBlockingHashMap<String, Method> endpoints = getEndPoints();
-        for (Method method : endpoints.values()) {
+        HashMap<String, List<Method>> endpoints = getEndpoints();
+        for (String point : endpoints.keySet()) {
             if (config.general.debug) {
-                System.out.println("Loading Endpoint '" + method.getAnnotation(Endpoint.class).endpoint() + "' from '" + method.getDeclaringClass().getName() + "'");
+                System.out.println("Loading Endpoint '" + point + "'");
             }
-            try {
-                invokeObjects.putIfAbsent(method.getDeclaringClass().getName(), method.getDeclaringClass().newInstance());
-            } catch (Exception e) {
-                System.err.println("Unable to create a instance of '" + method.getDeclaringClass().getName() + "'");
-                e.printStackTrace();
-            }
+            for (Method m : endpoints.get(point))
+                try {
+                    invokeObjects.putIfAbsent(m, m.getDeclaringClass().newInstance());
+                } catch (Exception e) {
+                    System.err.println("Unable to create a instance of '" + m.getDeclaringClass().getName() + "'");
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -107,7 +105,7 @@ public class AnnotationHelper {
         }
         try {
             // Try running the given endpoint method
-            Object data = method.invoke(invokeObjects.get(method.getDeclaringClass().getName()), params);
+            Object data = method.invoke(invokeObjects.get(method), params);
             if (data instanceof EndpointData) {
                 return (EndpointData) data;
             } else {
@@ -126,7 +124,7 @@ public class AnnotationHelper {
      * @param server Endpoint Http Server
      */
     public static void setupEndpoints(HttpServer server) {
-        NonBlockingHashMap<String, Method> endpoints = getEndPoints();
+        HashMap<String, List<Method>> endpoints = getEndpoints();
         for (String endpoint : endpoints.keySet()) {
             // Adds the endpoint to the httpserver
             server.createContext(endpoint, new EndpointWrapper(endpoints.get(endpoint)));

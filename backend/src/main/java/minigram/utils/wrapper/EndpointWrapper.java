@@ -5,11 +5,13 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import minigram.utils.AnnotationHelper;
 import minigram.utils.reflection.Endpoint;
+import minigram.utils.reflection.RequestType;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static minigram.MiniGram.GSON;
@@ -20,15 +22,17 @@ import static minigram.MiniGram.GSON;
 public class EndpointWrapper implements HttpHandler {
 
     // Endpoint
-    private final Method method;
+    private HashMap<RequestType, Method> methods;
 
     /**
-     * @param method Endpoint method
+     * @param validEndpoints Endpoint methods
      */
-    public EndpointWrapper(Method method) {
-        this.method = method;
+    public EndpointWrapper(List<Method> validEndpoints) {
+        methods = new HashMap<>();
+        for (Method method : validEndpoints) {
+            methods.put(method.getAnnotation(Endpoint.class).type(), method);
+        }
     }
-
 
     /**
      * Runs a given request for the given endpoint
@@ -39,16 +43,35 @@ public class EndpointWrapper implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if (isValid(exchange, exchange.getResponseHeaders())) {
-            EndpointData data = AnnotationHelper.invokeEndpoint(method, formatForEndpoint(method, exchange));
-            if (data != null) {
-                exchange.sendResponseHeaders(data.responseCode, data.data.getBytes().length);
-                exchange.getResponseBody().write(data.data.getBytes());
-                exchange.getResponseBody().close();
+            Method method = methods.get(convertToType(exchange.getRequestMethod()));
+            if (method != null) {
+                EndpointData data = AnnotationHelper.invokeEndpoint(method, formatForEndpoint(method, exchange));
+                if (data != null) {
+                    exchange.sendResponseHeaders(data.responseCode, data.data.getBytes().length);
+                    exchange.getResponseBody().write(data.data.getBytes());
+                    exchange.getResponseBody().close();
+                } else {
+                    System.err.println("Unable to run '" + method.getAnnotation(Endpoint.class).endpoint() + "' because it has a null response!");
+                    exchange.sendResponseHeaders(500, 0);
+                }
             } else {
-                System.err.println("Unable to run '" + method.getAnnotation(Endpoint.class).endpoint() + "' because it has a null response!");
                 exchange.sendResponseHeaders(500, 0);
             }
         }
+    }
+
+    private static RequestType convertToType(String type) {
+        type = type.toLowerCase();
+        if (type.equals("get")) {
+            return RequestType.GET;
+        } else if (type.equals("post")) {
+            return RequestType.POST;
+        } else if (type.equals("put")) {
+            return RequestType.PUT;
+        } else if (type.equals("delete") || type.equals("del")) {
+            return RequestType.DELETE;
+        }
+        return null;
     }
 
     // TODO Implement Verification / Validation

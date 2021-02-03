@@ -15,7 +15,7 @@ public class DatabaseController {
     }
 
     public boolean connect() {
-        String url = "jdbc:mysql://" + config.address + ":" + config.username + "/" + config.database_name + "?useSSL=false";
+        String url = "jdbc:mysql://" + config.address + ":" + config.port + "/" + config.database_name + "?useSSL=false";
         try {
             connection = DriverManager.getConnection(url, config.username, config.password);
             return true;

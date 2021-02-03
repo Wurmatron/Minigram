@@ -20,4 +20,9 @@ public @interface Endpoint {
      */
     String endpoint();
 
+    /**
+     * Type of request this method is requesting
+     */
+    RequestType type() default RequestType.GET;
+
 }
