@@ -3,14 +3,12 @@ package minigram;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.sun.net.httpserver.HttpServer;
+import io.javalin.Javalin;
 import minigram.models.Config;
 import minigram.sql.DatabaseController;
-import minigram.utils.AnnotationHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +22,7 @@ public class MiniGram {
 
     // Program vars
     public static Config config;
-    public static HttpServer server;
+    public static Javalin server;
     public static DatabaseController controller;
 
     // Global Instances
@@ -42,20 +40,9 @@ public class MiniGram {
         SCHEDULED_EXEC = Executors.newScheduledThreadPool(config.preformance.schedule_threads);
         EXEC = Executors.newFixedThreadPool(config.preformance.general_threads);
 
-        // Discover Annotations / "Discovery"
-        AnnotationHelper.setup();
-
         // Setup Http Server
-        try {
-            server = HttpServer.create(new InetSocketAddress(config.general.port), 0);
-            server.setExecutor(EXEC);
-            AnnotationHelper.setupEndpoints(server);
-            System.out.println("Web server started on 'http://localhost:" + config.general.port + "'");
-            server.start();
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.exit(-3);
-        }
+        server = Javalin.create().start(config.general.port);
+        server.get("/", ctx -> ctx.result("Hello World"));
         // Startup DB
         controller = new DatabaseController(config.database);
     }
