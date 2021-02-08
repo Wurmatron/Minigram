@@ -6,11 +6,16 @@ import com.google.gson.JsonSyntaxException;
 import io.javalin.Javalin;
 import minigram.models.Config;
 import minigram.sql.DatabaseController;
+import minigram.utils.anotations.Endpoint;
+import org.reflections8.Reflections;
+import org.reflections8.scanners.MethodAnnotationsScanner;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,6 +32,7 @@ public class MiniGram {
 
     // Global Instances
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Reflections REFLECTIONS = new Reflections("minigram", new MethodAnnotationsScanner());
     public static ScheduledExecutorService SCHEDULED_EXEC;
     public static ExecutorService EXEC;
 
@@ -42,6 +48,7 @@ public class MiniGram {
 
         // Setup Http Server
         server = Javalin.create().start(config.general.port);
+        registerEndpoints();    // Locate and register all endpoints
         server.get("/", ctx -> ctx.result("Hello World"));
         // Startup DB
         controller = new DatabaseController(config.database);
@@ -76,5 +83,20 @@ public class MiniGram {
             return config;
         }
         return null;
+    }
+
+    private static void registerEndpoints() {
+        Set<Method> endpoints = REFLECTIONS.getMethodsAnnotatedWith(Endpoint.class);
+        for (Method method : endpoints) {
+            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == Javalin.class)
+                try {
+                    method.invoke(method.getDeclaringClass().newInstance(), server);
+                    if (config.general.debug) {
+                        System.out.println("Registering endpoint '" + method.getName() + "@" + method.getDeclaringClass().getName() + "'");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to register endpoint '" + method.getName() + "@" + method.getDeclaringClass().getName() + "'");
+                }
+        }
     }
 }
