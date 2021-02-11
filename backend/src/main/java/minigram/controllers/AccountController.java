@@ -3,6 +3,7 @@ package minigram.controllers;
 import io.javalin.http.Handler;
 import minigram.models.Account;
 import minigram.utils.EncryptionUtils;
+import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -13,7 +14,8 @@ import static minigram.utils.SQLUtils.santize;
 
 public class AccountController {
 
-    private AccountController(){ }
+    private AccountController() {
+    }
 
     public static Handler registerNewAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
@@ -39,6 +41,26 @@ public class AccountController {
             ctx.status(422);
         }
     };
+
+    public static Account getAccountByName(String name) {
+        Account account = new Account("", name, "", "", "", "", new String[0]);
+        String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.santize(name));
+        try {
+            Statement statement = controller.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+            account.name = set.getString("name");
+            account.name = set.getString("name");
+            account.following_ids = set.getString("following_ids").split(", ");
+            account.email = set.getString("email");
+            account.password_hash = set.getString("password_hash");
+            account.password_salt = set.getString("password_salt");
+            return account;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static Handler fetchAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
