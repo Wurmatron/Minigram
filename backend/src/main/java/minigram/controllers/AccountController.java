@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static minigram.MiniGram.GSON;
-import static minigram.MiniGram.controller;
+import static minigram.MiniGram.dbManager;
 import static minigram.utils.SQLUtils.santize;
 
 public class AccountController {
@@ -30,7 +30,7 @@ public class AccountController {
                     .replaceAll("%password_hash%", santize(account.password_hash))
                     .replaceAll("%password_salt%", santize(account.password_salt))
                     .replaceAll("%following_ids%", account.following_ids != null && account.following_ids.length > 0 ? santize(String.join(", ", account.following_ids)) : "");
-            Statement statement = controller.getConnection().createStatement();
+            Statement statement = dbManager.getConnection().createStatement();
             try {
                 statement.execute(query);
             } catch (Exception e) {
@@ -46,7 +46,7 @@ public class AccountController {
         Account account = new Account("", name, "", "", "", "", new String[0]);
         String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.santize(name));
         try {
-            Statement statement = controller.getConnection().createStatement();
+            Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
             set.next();
             account.name = set.getString("name");
@@ -65,7 +65,7 @@ public class AccountController {
     public static Handler fetchAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
         String id = account.id;
-        Statement statement = controller.getConnection().createStatement();
+        Statement statement = dbManager.getConnection().createStatement();
         String query = "SELECT * FROM accounts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", id);
         try {
             ResultSet set = statement.executeQuery(query);
