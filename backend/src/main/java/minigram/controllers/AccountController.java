@@ -11,6 +11,8 @@ import java.sql.Statement;
 import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
 import static minigram.utils.SQLUtils.santize;
+import static minigram.MiniGram.controller;
+import static minigram.utils.SQLUtils.sanitize;
 
 public class AccountController {
 
@@ -31,6 +33,13 @@ public class AccountController {
                     .replaceAll("%password_salt%", santize(account.password_salt))
                     .replaceAll("%following_ids%", account.following_ids != null && account.following_ids.length > 0 ? santize(String.join(", ", account.following_ids)) : "");
             Statement statement = dbManager.getConnection().createStatement();
+                    .replaceAll("%name%", sanitize(account.name))
+                    .replaceAll("%profile_pic%", sanitize(account.profile_pic))
+                    .replaceAll("%email%", sanitize(account.email))
+                    .replaceAll("%password_hash%", sanitize(account.password_hash))
+                    .replaceAll("%password_salt%", sanitize(account.password_salt))
+                    .replaceAll("%following_ids%", account.following_ids != null && account.following_ids.length > 0 ? sanitize(String.join(", ", account.following_ids)) : "");
+            Statement statement = controller.getConnection().createStatement();
             try {
                 statement.execute(query);
             } catch (Exception e) {
@@ -44,7 +53,7 @@ public class AccountController {
 
     public static Account getAccountByName(String name) {
         Account account = new Account("", name, "", "", "", "", new String[0]);
-        String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.santize(name));
+        String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.sanitize(name));
         try {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
