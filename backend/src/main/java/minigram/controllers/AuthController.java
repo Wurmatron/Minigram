@@ -16,7 +16,7 @@ public class AuthController {
         Account account = MiniGram.GSON.fromJson(data, Account.class);
         Account dbAccount = Account.getAccountByName(account.name);
         if (dbAccount != null && account.password_hash.equals(dbAccount.password_hash)) {
-            String token = genToken(dbAccount);
+            String token = Account.genToken(dbAccount);
             AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
             tokens.put(token, dbAccount); // TODO Store in DB
             ctx.status(200).result(MiniGram.GSON.toJson(accountWithToken));
@@ -34,9 +34,4 @@ public class AuthController {
         ctx.status(404).result("Token does not exist");
 
     };
-
-    // TODO Token Generation
-    public static String genToken(Account account) {
-        return "randomToken";
-    }
 }

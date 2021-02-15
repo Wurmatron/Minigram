@@ -48,4 +48,9 @@ public class Account implements IModel {
         }
         return null;
     }
+
+    // TODO Token Generation
+    public static String genToken(Account account) {
+        return "randomToken";
+    }
 }
