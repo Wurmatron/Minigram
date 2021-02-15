@@ -36,31 +36,11 @@ public class AccountController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            ctx.status(201);
+            ctx.status(201).result(GSON.toJson(account));
         } else {
-            ctx.status(422);
+            ctx.status(422).result("Invalid data");
         }
     };
-
-    public static Account getAccountByName(String name) {
-        Account account = new Account("", name, "", "", "", "", new String[0]);
-        String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.sanitize(name));
-        try {
-            Statement statement = dbManager.getConnection().createStatement();
-            ResultSet set = statement.executeQuery(query);
-            set.next();
-            account.name = set.getString("name");
-            account.name = set.getString("name");
-            account.following_ids = set.getString("following_ids").split(", ");
-            account.email = set.getString("email");
-            account.password_hash = set.getString("password_hash");
-            account.password_salt = set.getString("password_salt");
-            return account;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public static Handler fetchAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
@@ -70,16 +50,17 @@ public class AccountController {
         try {
             ResultSet set = statement.executeQuery(query);
             set.next();
-            account.name = set.getString("name");
+            account.id = set.getString("id");
             account.name = set.getString("name");
             account.following_ids = set.getString("following_ids").split(", ");
             account.email = set.getString("email");
             account.password_hash = set.getString("password_hash");
             account.password_salt = set.getString("password_salt");
-            ctx.result(GSON.toJson(account));
+            ctx.status(200).result(GSON.toJson(account));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        ctx.status(404).result("Account does not exist");
     };
 
     // TODO Implement
