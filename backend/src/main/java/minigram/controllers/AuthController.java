@@ -14,16 +14,14 @@ public class AuthController {
     public static Handler login = ctx -> {
         String data = ctx.body();
         Account account = MiniGram.GSON.fromJson(data, Account.class);
-        Account dbAccount = AccountController.getAccountByName(account.name);
-        if (dbAccount != null) {
-            if (account.password_hash.equals(dbAccount.password_hash)) {
-                String token = genToken(dbAccount);
-                AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
-                tokens.put(token, dbAccount); // TODO Store in DB
-                ctx.result(MiniGram.GSON.toJson(accountWithToken));
-            }
+        Account dbAccount = Account.getAccountByName(account.name);
+        if (dbAccount != null && account.password_hash.equals(dbAccount.password_hash)) {
+            String token = genToken(dbAccount);
+            AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
+            tokens.put(token, dbAccount); // TODO Store in DB
+            ctx.status(200).result(MiniGram.GSON.toJson(accountWithToken));
         }
-        ctx.status(404);
+        ctx.status(404).result("Account does not exit");
     };
 
     public static Handler logout = ctx -> {
@@ -31,10 +29,10 @@ public class AuthController {
         if (tokens.containsKey(account.token)) {
             tokens.remove(account.token);
             account.token = "";
-            ctx.result(MiniGram.GSON.toJson(account));
-        } else {
-            ctx.status(404);
+            ctx.status(200).result(MiniGram.GSON.toJson(account));
         }
+        ctx.status(404).result("Token does not exist");
+
     };
 
     // TODO Token Generation
