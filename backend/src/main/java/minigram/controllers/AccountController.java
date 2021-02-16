@@ -3,16 +3,19 @@ package minigram.controllers;
 import io.javalin.http.Handler;
 import minigram.models.Account;
 import minigram.utils.EncryptionUtils;
-import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.regex.Pattern;
 
 import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
 import static minigram.utils.SQLUtils.sanitize;
 
 public class AccountController {
+
+    public static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+
 
     private AccountController() {
     }
@@ -78,9 +81,17 @@ public class AccountController {
 
     };
 
-    // TODO Implement
     private static boolean isValidAccount(Account account) {
-        return true;
+        if (sanitize(account.name).isEmpty()) {
+            return false;
+        }
+        if (sanitize(account.email).isEmpty() || !EMAIL_REGEX.matcher(account.email).find()) {
+            return false;
+        }
+        Account acc = Account.getAccountByName(sanitize(account.name));
+        if(acc == null)
+            return false;
+        return !account.password_hash.isEmpty() && !account.password_salt.isEmpty();
     }
 
 }

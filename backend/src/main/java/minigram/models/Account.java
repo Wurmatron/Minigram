@@ -1,5 +1,6 @@
 package minigram.models;
 
+import minigram.utils.EncryptionUtils;
 import minigram.utils.SQLUtils;
 import minigram.utils.wrapper.IModel;
 
@@ -49,8 +50,7 @@ public class Account implements IModel {
         return null;
     }
 
-    // TODO Token Generation
     public static String genToken(Account account) {
-        return "randomToken";
+        return new String(EncryptionUtils.generateSalt(64));
     }
 }
