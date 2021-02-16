@@ -4,7 +4,10 @@ import io.javalin.http.Handler;
 import minigram.MiniGram;
 import minigram.models.Account;
 import minigram.models.AccountWithToken;
+import minigram.utils.EncryptionUtils;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
+
+import java.nio.charset.StandardCharsets;
 
 public class AuthController {
 
@@ -15,11 +18,18 @@ public class AuthController {
         String data = ctx.body();
         Account account = MiniGram.GSON.fromJson(data, Account.class);
         Account dbAccount = Account.getAccountByName(account.name);
-        if (dbAccount != null && account.password_hash.equals(dbAccount.password_hash)) {
+        if(dbAccount == null) {
+            ctx.status(404).result("Account does not exit");
+            return;
+        }
+        String salt = dbAccount.password_salt;
+        String inputPassword = EncryptionUtils.hash(account.password_hash, salt.getBytes(StandardCharsets.UTF_8));
+        if (dbAccount != null && inputPassword.equals(dbAccount.password_hash)) {
             String token = Account.genToken(dbAccount);
             AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
             tokens.put(token, dbAccount); // TODO Store in DB
             ctx.status(200).result(MiniGram.GSON.toJson(accountWithToken));
+            return;
         }
         ctx.status(404).result("Account does not exit");
     };
@@ -30,6 +40,7 @@ public class AuthController {
             tokens.remove(account.token);
             account.token = "";
             ctx.status(200).result(MiniGram.GSON.toJson(account));
+            return;
         }
         ctx.status(404).result("Token does not exist");
 

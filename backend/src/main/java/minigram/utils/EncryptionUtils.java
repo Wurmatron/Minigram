@@ -3,11 +3,11 @@ package minigram.utils;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.util.Random;
 
 public class EncryptionUtils {
 
-    private static SecureRandom random;
+    private static Random random;
 
     // [0] = Hashed password
     // [1] = Generated salt
@@ -33,12 +33,19 @@ public class EncryptionUtils {
         return hashPassword;
     }
 
+    public static final char[] POSSIBLE_CHARS =
+            new char[]{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                    '0', '1', '2', '3', '4', '5', '6', '8', '8', '9',
+                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
     public static byte[] generateSalt(int size) {
         if (random == null) {
-            random = new SecureRandom();
+            random = new Random();
         }
-        byte[] salt = new byte[size];
-        random.nextBytes(salt);
-        return salt;
+        StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < size; index++) {
+            builder.append(POSSIBLE_CHARS[random.nextInt(POSSIBLE_CHARS.length)]);
+        }
+        return builder.toString().getBytes();
     }
 }
