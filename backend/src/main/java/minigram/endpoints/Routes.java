@@ -35,6 +35,9 @@ public class Routes {
 
     @Endpoint
     public void postComments(Javalin app){
+//        app.get("/posts/:id/comments/:id", CommentController.fetchPostComment);
 //        app.get("/posts/:id/comments", CommentController.fetchPostComments);
+//        app.put("/posts/:id/comments/:id", CommentController.updatePostComment);
+//        app.delete("/posts/:id/comments/:id", CommentController.deletePostComment);
     }
 }
