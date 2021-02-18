@@ -44,7 +44,7 @@ public class AccountController {
 
             ctx.contentType("application/json").status(201).result(GSON.toJson(account));
         } else {
-            ctx.contentType("application/json").status(422).result("{message: \"Invalid data\"}");
+            ctx.contentType("application/json").status(422).result("{\"message\": \"Invalid data\"}");
         }
     };
 
@@ -72,7 +72,7 @@ public class AccountController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ctx.contentType("application/json").status(404).result("{message: \"Account Not Found!\"}");
+        ctx.contentType("application/json").status(404).result("{\"message\": \"Account Not Found!\"}");
     };
 
     private static boolean isNum(String id) {

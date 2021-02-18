@@ -19,7 +19,7 @@ public class AuthController {
         Account account = MiniGram.GSON.fromJson(data, Account.class);
         Account dbAccount = Account.getAccountByName(account.name);
         if(dbAccount == null) {
-            ctx.status(404).result("Account does not exit");
+            ctx.contentType("application/json").status(404).result("{\"message\": \"Account does not exit\"}");
             return;
         }
         String salt = dbAccount.password_salt;
@@ -28,10 +28,10 @@ public class AuthController {
             String token = Account.genToken(dbAccount);
             AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
             tokens.put(token, dbAccount); // TODO Store in DB
-            ctx.status(200).result(MiniGram.GSON.toJson(accountWithToken));
+            ctx.contentType("application/json").status(200).result(MiniGram.GSON.toJson(accountWithToken));
             return;
         }
-        ctx.status(404).result("Account does not exit");
+        ctx.contentType("application/json").status(404).result("{\"message\": \"Account does not exit\"}");
     };
 
     public static Handler logout = ctx -> {
@@ -39,10 +39,10 @@ public class AuthController {
         if (tokens.containsKey(account.token)) {
             tokens.remove(account.token);
             account.token = "";
-            ctx.status(200).result(MiniGram.GSON.toJson(account));
+            ctx.contentType("application/json").status(200).result(MiniGram.GSON.toJson(account));
             return;
         }
-        ctx.status(404).result("Token does not exist");
+        ctx.contentType("application/json").status(404).result("{\"message\": \"Token does not exist\"}");
 
     };
 }
