@@ -41,9 +41,10 @@ public class AccountController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            ctx.status(201).result(GSON.toJson(account));
+
+            ctx.contentType("application/json").status(201).result(GSON.toJson(account));
         } else {
-            ctx.status(422).result("Invalid data");
+            ctx.contentType("application/json").status(422).result("{message: \"Invalid data\"}");
         }
     };
 
@@ -66,12 +67,12 @@ public class AccountController {
             account.email = set.getString("email");
             account.password_hash = set.getString("password_hash");
             account.password_salt = set.getString("password_salt");
-            ctx.status(200).result(GSON.toJson(account));
+            ctx.contentType("application/json").status(200).result(GSON.toJson(account));
             return;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        ctx.status(404).result("Account does not exist");
+        ctx.contentType("application/json").status(404).result("{message: \"Account Not Found!\"}");
     };
 
     private static boolean isNum(String id) {
@@ -99,7 +100,7 @@ public class AccountController {
                 account.password_salt = set.getString("password_salt");
                 accounts.add(account);
             }
-            ctx.status(200).result(GSON.toJson(accounts.toArray(new Account[0])));
+            ctx.contentType("application/json").status(200).result(GSON.toJson(accounts.toArray(new Account[0])));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -121,7 +122,7 @@ public class AccountController {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query.toString());
             set.next();
-            ctx.status(200).result(GSON.toJson(account));
+            ctx.contentType("application/json").status(200).result(GSON.toJson(account));
         } catch (Exception e) {
             e.printStackTrace();
         }
