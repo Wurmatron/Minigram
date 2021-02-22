@@ -108,7 +108,7 @@ public class AccountController {
                return true;
             }
         } catch (Exception e) {
-            // TODO
+            e.printStackTrace();
         }
         return !account.password_hash.isEmpty() && !account.password_salt.isEmpty();
     }
