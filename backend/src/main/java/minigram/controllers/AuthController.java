@@ -17,21 +17,21 @@ public class AuthController {
     public static Handler login = ctx -> {
         String data = ctx.body();
         Account account = MiniGram.GSON.fromJson(data, Account.class);
-        Account dbAccount = Account.getAccountByName(account.name);
+        Account dbAccount = Account.getAccountByEmail(account.email);
         if(dbAccount == null) {
             ctx.contentType("application/json").status(404).result("{\"message\": \"Account does not exit\"}");
             return;
         }
         String salt = dbAccount.password_salt;
         String inputPassword = EncryptionUtils.hash(account.password_hash, salt.getBytes(StandardCharsets.UTF_8));
-        if (dbAccount != null && inputPassword.equals(dbAccount.password_hash)) {
+        if (inputPassword.equals(dbAccount.password_hash)) {
             String token = Account.genToken(dbAccount);
             AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
             tokens.put(token, dbAccount); // TODO Store in DB
             ctx.contentType("application/json").status(200).result(MiniGram.GSON.toJson(accountWithToken));
             return;
         }
-        ctx.contentType("application/json").status(404).result("{\"message\": \"Account does not exit\"}");
+        ctx.contentType("application/json").status(401).result("{\"message\": \"Invalid credentials\"}");
     };
 
     public static Handler logout = ctx -> {
