@@ -50,60 +50,22 @@ public class AccountController {
 
     public static Handler fetchAccount = ctx -> {
         String id = ctx.pathParam("id");
-        String query = "";
-        if (isNum(id)) {
-            query = "SELECT * FROM accounts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", id);
-        } else {
-            query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", sanitize(id));
+        Account account = new Account();
+
+        account = Account.getAccountById(id);
+
+        if (account == null){
+            ctx.contentType("application/json").status(404).result("{\"message\": \"Account Not Found!\"}");
         }
-        try {
-            Statement statement = dbManager.getConnection().createStatement();
-            Account account = new Account();
-            ResultSet set = statement.executeQuery(query);
-            set.next();
-            account.id = set.getString("id");
-            account.name = set.getString("name");
-            account.following_ids = set.getString("following_ids").split(", ");
-            account.email = set.getString("email");
-            account.password_hash = set.getString("password_hash");
-            account.password_salt = set.getString("password_salt");
-            ctx.contentType("application/json").status(200).result(GSON.toJson(account));
-            return;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ctx.contentType("application/json").status(404).result("{\"message\": \"Account Not Found!\"}");
+
+        ctx.contentType("application/json").status(200).result(GSON.toJson(account));
     };
 
-    private static boolean isNum(String id) {
-        try {
-            Integer.parseInt(id);
-            return true;
-        } catch (NumberFormatException e) {
-        }
-        return false;
-    }
 
     public static Handler fetchAccounts = ctx -> {
-        String query = "SELECT * FROM accounts";
-        List<Account> accounts = new ArrayList<>();
-        try {
-            Statement statement = dbManager.getConnection().createStatement();
-            ResultSet set = statement.executeQuery(query);
-            while (set.next()) {
-                Account account = new Account();
-                account.id = set.getString("id");
-                account.name = set.getString("name");
-                account.following_ids = set.getString("following_ids").split(", ");
-                account.email = set.getString("email");
-                account.password_hash = set.getString("password_hash");
-                account.password_salt = set.getString("password_salt");
-                accounts.add(account);
-            }
-            ctx.contentType("application/json").status(200).result(GSON.toJson(accounts.toArray(new Account[0])));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<Account> accounts;
+        accounts = Account.getAccounts();
+        ctx.contentType("application/json").status(200).result(GSON.toJson(accounts.toArray(new Account[0])));
     };
 
     public static Handler updateAccount = ctx -> {
@@ -141,8 +103,8 @@ public class AccountController {
             return false;
         }
         try {
-            Account acc = Account.getAccountByName(sanitize(account.name));
-            if(acc == null) {
+            Account acc = Account.getAccountById(account.name);
+            if(acc.id == null) {
                return true;
             }
         } catch (Exception e) {

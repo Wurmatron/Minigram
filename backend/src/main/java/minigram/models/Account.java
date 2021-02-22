@@ -6,8 +6,12 @@ import minigram.utils.wrapper.IModel;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
+import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
+import static minigram.utils.SQLUtils.sanitize;
 
 public class Account implements IModel {
 
@@ -32,9 +36,36 @@ public class Account implements IModel {
         this.following_ids = following_ids;
     }
 
-    public static Account getAccountByName(String name) {
-        Account account = new Account("", name, "", "", "", "", new String[0]);
-        String query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.sanitize(name));
+    public static Account getAccountById(String id){
+        String query = "";
+        Account account = new Account();
+        if (isNum(id)) {
+            query = "SELECT * FROM accounts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", id);
+        } else {
+            query = "SELECT * FROM accounts WHERE name='%name%' LIMIT 1;".replaceAll("%name%", SQLUtils.sanitize(id));
+        }
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+            account.id = set.getString("id");
+            account.name = set.getString("name");
+            account.following_ids = set.getString("following_ids").split(", ");
+            account.email = set.getString("email");
+            account.password_hash = set.getString("password_hash");
+            account.password_salt = set.getString("password_salt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return account;
+    }
+
+    public static Account getAccountByEmail(String email){
+        String query = "";
+        Account account = new Account();
+
+        query = "SELECT * FROM accounts WHERE email='%email%' LIMIT 1;".replaceAll("%email%", email);
+
         try {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
@@ -46,9 +77,43 @@ public class Account implements IModel {
             account.password_hash = set.getString("password_hash");
             account.password_salt = set.getString("password_salt");
             return account;
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
+
+    public static List<Account> getAccounts(){
+        String query = "SELECT * FROM accounts";
+        List<Account> accounts = new ArrayList<>();
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            while (set.next()) {
+                Account account = new Account();
+                account.id = set.getString("id");
+                account.name = set.getString("name");
+                account.following_ids = set.getString("following_ids").split(", ");
+                account.email = set.getString("email");
+                account.password_hash = set.getString("password_hash");
+                account.password_salt = set.getString("password_salt");
+                accounts.add(account);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return accounts;
+    }
+
+    private static boolean isNum(String id) {
+        try {
+            Integer.parseInt(id);
+            return true;
+        } catch (NumberFormatException e) {
+        }
+        return false;
+    }
+
 
     public static String genToken(Account account) {
         return new String(EncryptionUtils.generateSalt(64));
