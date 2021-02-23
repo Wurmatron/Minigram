@@ -75,4 +75,26 @@ public class Post {
         }
         return null;
     }
+
+//    TODO: Test
+    public static Post deletePost(String id){
+        Post post = getPostById(id);
+
+        String query  = "DELETE FROM posts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
+
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+
+//          check if query was successful
+            if (set.rowDeleted()){
+                return post;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
