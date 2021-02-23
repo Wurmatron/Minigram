@@ -90,9 +90,19 @@ public class AccountController {
         }
     };
 
-    // TODO Implement
-    public static Handler deleteAccount = ctx -> {
 
+    public static Handler deleteAccount = ctx -> {
+        Account account = GSON.fromJson(ctx.body(), Account.class);
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", account.id));
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query.toString());
+            set.next();
+            ctx.contentType("application/json").status(200).result(GSON.toJson(account));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     };
 
     private static boolean isValidAccount(Account account) {
