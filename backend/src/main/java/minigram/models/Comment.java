@@ -10,7 +10,7 @@ import java.util.List;
 
 import static minigram.MiniGram.dbManager;
 
-public class Comment implements IModel {
+public class Comment extends BaseModel {
 
     public String id;
     public String text;

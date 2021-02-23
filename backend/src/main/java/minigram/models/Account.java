@@ -9,11 +9,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
-import static minigram.utils.SQLUtils.sanitize;
 
-public class Account implements IModel {
+public class Account extends BaseModel {
 
     public String id;
     public String name;
@@ -104,17 +102,6 @@ public class Account implements IModel {
         }
         return accounts;
     }
-
-    private static boolean isNum(String id) {
-        try {
-            Integer.parseInt(id);
-            return true;
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
 
     public static String genToken(Account account) {
         return new String(EncryptionUtils.generateSalt(64));

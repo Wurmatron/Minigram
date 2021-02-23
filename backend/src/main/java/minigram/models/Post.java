@@ -9,7 +9,7 @@ import java.util.List;
 
 import static minigram.MiniGram.dbManager;
 
-public class Post {
+public class Post extends BaseModel {
 
     public String id;
     public String[] likes_ids;
