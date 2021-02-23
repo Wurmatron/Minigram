@@ -1,5 +1,6 @@
 package minigram.models;
 
+import minigram.utils.SQLUtils;
 import minigram.utils.wrapper.IModel;
 
 import java.sql.ResultSet;
@@ -41,6 +42,26 @@ public class Comment implements IModel {
             e.printStackTrace();
         }
         return comments;
+    }
+
+//    TODO: Test
+    public static Comment getCommentById(String id){
+
+        Comment comment = new Comment();
+        String query  = "SELECT * FROM comments WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
+
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+            comment.id = set.getString("id");
+            comment.commented_by_id = set.getString("commented_by_id");
+            comment.text = set.getString("text");
+            return comment;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 
