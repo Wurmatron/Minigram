@@ -9,7 +9,7 @@ import minigram.utils.anotations.Endpoint;
 public class EndpointSecurity {
 
     public static AuthRoles getUserRole(Context ctx) {
-        String sessionID = ctx.header("sessionID");
+        String sessionID = ctx.header("token");
         if(sessionID != null && AuthController.tokens.containsKey(sessionID)) {
             return AuthRoles.USER;
         }
