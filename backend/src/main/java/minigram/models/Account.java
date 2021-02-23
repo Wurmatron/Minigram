@@ -110,6 +110,7 @@ public class Account implements IModel {
             Integer.parseInt(id);
             return true;
         } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         return false;
     }
