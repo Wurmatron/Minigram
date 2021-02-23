@@ -1,5 +1,7 @@
 package minigram.models;
 
+import minigram.utils.SQLUtils;
+
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -49,5 +51,28 @@ public class Post {
             e.printStackTrace();
         }
         return posts;
+    }
+
+//  TODO: Test
+    public static Post getPostById(String id){
+
+        Post post = new Post();
+        String query  = "SELECT * FROM posts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
+
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+            post.id = set.getString("id");
+            post.likes_ids = set.getString("likes_ids").split(", ");
+            post.comments_ids = set.getString("comments_id").split(", ");
+            post.text = set.getString("text");
+            post.image = set.getString("image");
+            post.posted_by_id = set.getString("posted_by_id");
+            return post;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
