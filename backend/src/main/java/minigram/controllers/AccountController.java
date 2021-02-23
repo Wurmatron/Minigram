@@ -3,6 +3,7 @@ package minigram.controllers;
 import io.javalin.http.Handler;
 import minigram.models.Account;
 import minigram.utils.EncryptionUtils;
+import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -41,7 +42,6 @@ public class AccountController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
             ctx.contentType("application/json").status(201).result(GSON.toJson(account));
         } else {
             ctx.contentType("application/json").status(422).result("{\"message\": \"Invalid data\"}");
@@ -94,7 +94,7 @@ public class AccountController {
     public static Handler deleteAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
         StringBuilder query = new StringBuilder();
-        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", account.id));
+        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", SQLUtils.sanitize(account.id)));
         try {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query.toString());

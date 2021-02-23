@@ -3,14 +3,18 @@ package minigram.endpoints;
 import io.javalin.Javalin;
 import io.javalin.core.security.Role;
 import io.javalin.http.Context;
+import minigram.MiniGram;
 import minigram.controllers.AuthController;
 import minigram.utils.anotations.Endpoint;
 
 public class EndpointSecurity {
 
     public static AuthRoles getUserRole(Context ctx) {
-        String sessionID = ctx.header("sessionID");
-        if(sessionID != null && AuthController.tokens.containsKey(sessionID)) {
+        if (MiniGram.config.general.debug) {
+            return AuthRoles.ADMIN;
+        }
+        String sessionID = ctx.header("token");
+        if (sessionID != null && AuthController.tokens.containsKey(sessionID)) {
             return AuthRoles.USER;
         }
         return AuthRoles.ANONYMOUS;
