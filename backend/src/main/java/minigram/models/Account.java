@@ -64,7 +64,7 @@ public class Account implements IModel {
         String query = "";
         Account account = new Account();
 
-        query = "SELECT * FROM accounts WHERE email='%email%' LIMIT 1;".replaceAll("%email%", email);
+        query = "SELECT * FROM accounts WHERE email='%email%' LIMIT 1;".replaceAll("%email%", SQLUtils.sanitize(email));
 
         try {
             Statement statement = dbManager.getConnection().createStatement();
