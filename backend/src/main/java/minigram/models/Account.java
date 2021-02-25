@@ -9,9 +9,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
 
 public class Account extends BaseModel {
+
+    public static final String[] ACCOUNT_COLUMNS = new String[]{"id", "name", "profile_pic", "email", "password_hash", "password_salt", "following_ids"};
 
     public String id;
     public String name;
@@ -101,6 +104,26 @@ public class Account extends BaseModel {
             e.printStackTrace();
         }
         return accounts;
+    }
+
+    public static Boolean delete(String id){
+
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", SQLUtils.sanitize(id)));
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query.toString());
+            set.next();
+
+            // check if query was successful
+            if (set.rowDeleted()){
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static String genToken(Account account) {

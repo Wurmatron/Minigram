@@ -7,7 +7,6 @@ import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,6 @@ import static minigram.utils.SQLUtils.sanitize;
 public class AccountController {
 
     public static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-    public static final String[] ACCOUNT_COLUMNS = new String[]{"id", "name", "profile_pic", "email", "password_hash", "password_salt", "following_ids"};
 
     private AccountController() {
     }
@@ -72,7 +70,7 @@ public class AccountController {
         Account account = GSON.fromJson(ctx.body(), Account.class);
         StringBuilder query = new StringBuilder();
         query.append("UPDATE accounts SET ");
-        for (String type : ACCOUNT_COLUMNS) {
+        for (String type : Account.ACCOUNT_COLUMNS) {
             if (type.equals("id"))
                 continue;
             query.append("'%type%' = '%value%', ".replaceAll("%type%", type).replaceAll("%value%", type.equalsIgnoreCase("following_ids") ?
@@ -92,17 +90,17 @@ public class AccountController {
 
 
     public static Handler deleteAccount = ctx -> {
-        Account account = GSON.fromJson(ctx.body(), Account.class);
-        StringBuilder query = new StringBuilder();
-        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", SQLUtils.sanitize(account.id)));
-        try {
-            Statement statement = dbManager.getConnection().createStatement();
-            ResultSet set = statement.executeQuery(query.toString());
-            set.next();
-            ctx.contentType("application/json").status(200).result(GSON.toJson(account));
-        } catch (Exception e) {
-            e.printStackTrace();
+        String id = ctx.pathParam("id");
+
+        Account account = Account.getAccountById(id);
+
+        Boolean accountDeleted = Account.delete(id);
+
+        if (accountDeleted){
+            ctx.contentType("application/json").status(201).result("{\"data\":"+ GSON.toJson(account) +"}");
         }
+
+        ctx.contentType("application/json").status(404).result("{\"message\": \"Account Not Found!\"}");
     };
 
     private static boolean isValidAccount(Account account) {
