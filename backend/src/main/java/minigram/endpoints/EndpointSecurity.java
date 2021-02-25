@@ -7,6 +7,8 @@ import minigram.MiniGram;
 import minigram.controllers.AuthController;
 import minigram.utils.anotations.Endpoint;
 
+import static minigram.utils.HttpUtils.responseMessage;
+
 public class EndpointSecurity {
 
     public static AuthRoles getUserRole(Context ctx) {
@@ -27,7 +29,7 @@ public class EndpointSecurity {
             if (permittedRoles.contains(userRole)) {
                 handler.handle(ctx);
             } else {
-                ctx.contentType("application/json").status(401).result("{\"message\": \"Unauthorized\"}");
+                ctx.contentType("application/json").status(401).result(responseMessage("Unauthorized"));
             }
         });
     }
