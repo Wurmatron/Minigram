@@ -9,6 +9,10 @@ import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
 import java.nio.charset.StandardCharsets;
 
+import static minigram.MiniGram.GSON;
+import static minigram.utils.HttpUtils.responseData;
+import static minigram.utils.HttpUtils.responseMessage;
+
 public class AuthController {
 
     // Token, Account
@@ -19,7 +23,7 @@ public class AuthController {
         Account account = MiniGram.GSON.fromJson(data, Account.class);
         Account dbAccount = Account.getAccountByEmail(account.email);
         if(dbAccount == null) {
-            ctx.contentType("application/json").status(404).result("{\"message\": \"Account does not exit\"}");
+            ctx.contentType("application/json").status(404).result(responseMessage("Account does not exit"));
             return;
         }
         String salt = dbAccount.password_salt;
@@ -28,10 +32,10 @@ public class AuthController {
             String token = Account.genToken(dbAccount);
             AccountWithToken accountWithToken = new AccountWithToken(token, dbAccount);
             tokens.put(token, dbAccount); // TODO Store in DB
-            ctx.contentType("application/json").status(200).result(MiniGram.GSON.toJson(accountWithToken));
+            ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accountWithToken)));
             return;
         }
-        ctx.contentType("application/json").status(401).result("{\"message\": \"Invalid credentials\"}");
+        ctx.contentType("application/json").status(401).result(responseMessage("Invalid credentials"));
     };
 
     public static Handler logout = ctx -> {
@@ -39,10 +43,10 @@ public class AuthController {
         if (tokens.containsKey(account.token)) {
             tokens.remove(account.token);
             account.token = "";
-            ctx.contentType("application/json").status(200).result(MiniGram.GSON.toJson(account));
+            ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(account)));
             return;
         }
-        ctx.contentType("application/json").status(404).result("{\"message\": \"Token does not exist\"}");
+        ctx.contentType("application/json").status(404).result(responseMessage("Token does not exist"));
 
     };
 }
