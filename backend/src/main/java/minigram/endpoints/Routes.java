@@ -3,6 +3,7 @@ package minigram.endpoints;
 import io.javalin.Javalin;
 import minigram.controllers.AccountController;
 import minigram.controllers.AuthController;
+import minigram.controllers.PostsController;
 import minigram.endpoints.EndpointSecurity.AuthRoles;
 import minigram.utils.anotations.Endpoint;
 
@@ -32,10 +33,19 @@ public class Routes {
 //        app.get("/posts/", PostsController.fetchPosts,roles(AuthRoles.USER,AuthRoles.ADMIN));
 //        app.put("/posts/:id", PostsController.updatePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
 //        app.delete("/posts/:id", PostsController.deletePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.post("/posts", PostsController.createPost, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
     public void postComments(Javalin app) {
+//        app.get("/posts/:id/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.get("/posts/:id/comments", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.put("/posts/:id/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.delete("/posts/:id/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+    }
+
+    @Endpoint
+    public void followings(Javalin app) {
 //        app.get("/posts/:id/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
 //        app.get("/posts/:id/comments", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
 //        app.put("/posts/:id/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));

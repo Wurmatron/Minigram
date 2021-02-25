@@ -28,4 +28,8 @@ public class PostsController {
 
     };
 
+    //    TODO: Implement
+    public static Handler createPost = ctx -> {
+
+    };
 }
