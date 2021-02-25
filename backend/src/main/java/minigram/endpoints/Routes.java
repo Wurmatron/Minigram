@@ -22,8 +22,8 @@ public class Routes {
     public void account(Javalin app) {
         app.get("/account/:id", AccountController.fetchAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.get("/account", AccountController.fetchAccounts, roles(AuthRoles.USER,AuthRoles.ADMIN));
-        app.put("/account", AccountController.updateAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
-        app.delete("/account", AccountController.deleteAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.put("/account/:id", AccountController.updateAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.delete("/account/:id", AccountController.deleteAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
