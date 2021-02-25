@@ -27,7 +27,7 @@ public class EndpointSecurity {
             if (permittedRoles.contains(userRole)) {
                 handler.handle(ctx);
             } else {
-                ctx.status(401).result("Unauthorized");
+                ctx.contentType("application/json").status(401).result("{\"message\": \"Unauthorized\"}");
             }
         });
     }
