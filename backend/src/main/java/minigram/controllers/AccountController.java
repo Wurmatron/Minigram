@@ -75,28 +75,17 @@ public class AccountController {
     };
 
     public static Handler updateAccount = ctx -> {
+        String id = ctx.pathParam("id");
         Account account = GSON.fromJson(ctx.body(), Account.class);
-        StringBuilder query = new StringBuilder();
-        query.append("UPDATE accounts SET ");
-        for (String type : Account.ACCOUNT_COLUMNS) {
-            if (type.equals("id"))
-                continue;
-            query.append("'%type%' = '%value%', ".replaceAll("%type%", type).replaceAll("%value%", type.equalsIgnoreCase("following_ids") ?
-                    String.join(",", (String[]) account.getClass().getDeclaredField(type).get(account)) :
-                    (String) account.getClass().getDeclaredField(type).get(account)));
-        }
-        query.append(" WHERE id='%id%';".replaceAll("%id", account.id));
-        try {
-            Statement statement = dbManager.getConnection().createStatement();
-            ResultSet set = statement.executeQuery(query.toString());
-            set.next();
+
+        if (Account.updateAccount(account)) {
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(account)));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            ctx.contentType("application/json").status(201).result(responseMessage("Updating Account failed"));
         }
     };
 
-//  TODO: Test
+
     public static Handler deleteAccount = ctx -> {
         String id = ctx.pathParam("id");
 
