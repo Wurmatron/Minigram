@@ -65,7 +65,7 @@ public class AccountController {
     public static Handler fetchAccounts = ctx -> {
         List<Account> accounts;
         accounts = Account.getAccounts();
-        ctx.contentType("application/json").status(200).result(GSON.toJson(accounts.toArray(new Account[0])));
+        ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accounts.toArray(new Account[0]))));
     };
 
     public static Handler updateAccount = ctx -> {
@@ -90,7 +90,7 @@ public class AccountController {
         }
     };
 
-
+//  TODO: Test
     public static Handler deleteAccount = ctx -> {
         String id = ctx.pathParam("id");
 
