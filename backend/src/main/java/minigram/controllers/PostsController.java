@@ -1,6 +1,13 @@
 package minigram.controllers;
 
 import io.javalin.http.Handler;
+import minigram.models.Account;
+import minigram.models.Post;
+
+import java.util.List;
+
+import static minigram.MiniGram.GSON;
+import static minigram.utils.HttpUtils.responseData;
 
 public class PostsController {
 
@@ -8,14 +15,15 @@ public class PostsController {
 
     }
 
-    //    TODO: Implement
     public static Handler fetchPosts = ctx -> {
-
+        List<Post> posts;
+        posts = Post.getPosts();
+        ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(posts.toArray(new Post[0]))));
     };
 
-    //    TODO: Implement
     public static Handler fetchPost = ctx -> {
-
+        Post post = Post.getPostById(ctx.pathParam("id"));
+        ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(post)));
     };
 
     //    TODO: Implement

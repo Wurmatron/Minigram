@@ -11,6 +11,8 @@ import static minigram.MiniGram.dbManager;
 
 public class Post extends BaseModel {
 
+    public static final String[] POST_COLUMNS = new String[]{"id", "likes_ids", "comments_ids", "text", "image", "posted_by_id"};
+
     public String id;
     public String[] likes_ids;
     public String[] comments_ids;
@@ -30,7 +32,6 @@ public class Post extends BaseModel {
     }
 
 
-//  TODO: Test
     public static List<Post> getPosts(){
         String query = "SELECT * FROM posts";
         List<Post> posts = new ArrayList<>();
@@ -53,7 +54,6 @@ public class Post extends BaseModel {
         return posts;
     }
 
-//  TODO: Test
     public static Post getPostById(String id){
 
         Post post = new Post();
@@ -62,18 +62,23 @@ public class Post extends BaseModel {
         try {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
-            set.next();
-            post.id = set.getString("id");
-            post.likes_ids = set.getString("likes_ids").split(", ");
-            post.comments_ids = set.getString("comments_id").split(", ");
-            post.text = set.getString("text");
-            post.image = set.getString("image");
-            post.posted_by_id = set.getString("posted_by_id");
-            return post;
+
+            if (set.next()){
+                post.id = set.getString("id");
+                post.likes_ids = set.getString("likes_ids").split(", ");
+                post.comments_ids = set.getString("comments_id").split(", ");
+                post.text = set.getString("text");
+                post.image = set.getString("image");
+                post.posted_by_id = set.getString("posted_by_id");
+            } else  {
+                return null;
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+
+        return post;
     }
 
 //    TODO: Test
