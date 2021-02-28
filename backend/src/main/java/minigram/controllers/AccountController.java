@@ -25,6 +25,12 @@ public class AccountController {
 
     public static Handler registerNewAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
+//        check if email exists already
+        if (Account.getAccountByEmail(account.email) != null){
+            ctx.contentType("application/json").status(422).result(responseMessage("An Account with that email exists already"));
+            return;
+        }
+
         String[] hash = EncryptionUtils.hash(account.password_hash);
         account.password_hash = hash[0];
         account.password_salt = hash[1];
@@ -100,6 +106,7 @@ public class AccountController {
 
         if (accountDeleted){
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(account)));
+            return;
         }
 
         ctx.contentType("application/json").status(404).result(responseMessage("Account Not Found"));

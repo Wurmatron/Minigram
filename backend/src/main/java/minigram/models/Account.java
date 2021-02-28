@@ -2,7 +2,6 @@ package minigram.models;
 
 import minigram.utils.EncryptionUtils;
 import minigram.utils.SQLUtils;
-import minigram.utils.wrapper.IModel;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -109,14 +108,13 @@ public class Account extends BaseModel {
     public static Boolean delete(String id){
 
         StringBuilder query = new StringBuilder();
-        query.append("DELETE FROM accounts WHERE id='%id%';".replaceAll("%id", SQLUtils.sanitize(id)));
+        query.append("DELETE FROM accounts WHERE id=%id%;".replaceAll("%id%", SQLUtils.sanitize(id)));
         try {
             Statement statement = dbManager.getConnection().createStatement();
-            ResultSet set = statement.executeQuery(query.toString());
-            set.next();
+            int set = statement.executeUpdate(query.toString());
 
             // check if query was successful
-            if (set.rowDeleted()){
+            if (set == 1){
                 return true;
             }
 
