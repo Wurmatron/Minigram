@@ -10,28 +10,29 @@ repositories {
     mavenCentral()
 }
 
-String build_number = System.getenv().BUILD_NUMBER
-if (build_number == null) {
-    build_number = "CustomBuild"
-} else {
-    build_number = "Jenkins-${build_number}"
-}
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
-archivesBaseName = 'Clone-Backend'
-version = "${program_version}-${build_number}"
+archivesBaseName = 'Minigram-Backend'
 
 dependencies {
     // Libs
     compile "com.boundary:high-scale-lib:${highscalelib_version}"
-    compile 'com.google.code.gson:gson:2.8.6'
+    compile "com.google.code.gson:gson:${gson_version}"
+    compile "net.oneandone.reflections8:reflections8:${reflections_version}"
+    compile "org.javassist:javassist:${javassist_version}"
+    compile "commons-io:commons-io:${apache_io_version}"
+    compile "mysql:mysql-connector-java:${mysql_connector_version}"
 }
 
-shadowJar.archiveName = "${archivesBaseName}-${version}.jar"
+shadowJar.archiveName = "${archivesBaseName}.jar"
 shadowJar {
     dependencies {
         include(dependency("com.boundary:high-scale-lib:${highscalelib_version}"))
         include(dependency("com.google.code.gson:gson:${gson_version}"))
+        include(dependency("net.oneandone.reflections8:reflections8:${reflections_version}"))
+        include(dependency("org.javassist:javassist:${javassist_version}"))
+        include(dependency("commons-io:commons-io:${apache_io_version}"))
+        include(dependency("mysql:mysql-connector-java:${mysql_connector_version}"))
     }
 }
 
@@ -48,7 +49,7 @@ jar {
     manifest {
         attributes(
                 'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-                'Main-Class': 'clone.Main'
+                'Main-Class': 'minigram.MiniGram'
         )
     }
 }
