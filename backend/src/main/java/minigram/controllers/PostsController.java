@@ -8,6 +8,7 @@ import java.util.List;
 
 import static minigram.MiniGram.GSON;
 import static minigram.utils.HttpUtils.responseData;
+import static minigram.utils.HttpUtils.responseMessage;
 
 public class PostsController {
 
@@ -33,7 +34,20 @@ public class PostsController {
 
     //    TODO: Implement
     public static Handler deletePost = ctx -> {
+        String id = ctx.pathParam("id");
 
+        Post post = Post.getPostById(id);
+
+        if (post == null){
+            ctx.contentType("application/json").status(404).result(responseMessage("Post Not Found"));
+            return;
+        }
+
+        Boolean postDeleted = Post.deletePost(id);
+
+        if (postDeleted){
+            ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(post)));
+        }
     };
 
     //    TODO: Implement

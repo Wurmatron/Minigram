@@ -82,9 +82,7 @@ public class Post extends BaseModel {
     }
 
 //    TODO: Test
-    public static Post deletePost(String id){
-        Post post = getPostById(id);
-
+    public static Boolean deletePost(String id){
         String query  = "DELETE FROM posts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
 
         try {
@@ -94,12 +92,12 @@ public class Post extends BaseModel {
 
 //          check if query was successful
             if (set.rowDeleted()){
-                return post;
+                return true;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return null;
+        return false;
     }
 }
