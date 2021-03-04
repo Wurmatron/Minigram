@@ -38,10 +38,10 @@ public class Routes {
 
     @Endpoint
     public void postComments(Javalin app) {
-//        app.get("/posts/:id/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.get("/posts/:id/comments", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.put("/posts/:id/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.delete("/posts/:id/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.get("/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.get("/comments/posts/:id", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.put("/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.delete("/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
