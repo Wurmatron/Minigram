@@ -32,7 +32,6 @@ public class PostsController {
 
     };
 
-    //    TODO: Implement
     public static Handler deletePost = ctx -> {
         String id = ctx.pathParam("id");
 
