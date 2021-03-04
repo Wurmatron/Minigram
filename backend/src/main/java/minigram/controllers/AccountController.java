@@ -32,7 +32,8 @@ public class AccountController {
                     @OpenApiResponse(status = "201", description = "User has been created"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "422", description = "Invalid Json, Account Exists"),
-            }
+            },
+            tags = {"User"}
     )
     public static Handler registerNewAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
@@ -73,7 +74,8 @@ public class AccountController {
                     @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
-            }
+            },
+            tags = {"User"}
     )
     public static Handler fetchAccount = ctx -> {
         String id = ctx.pathParam("id");
@@ -94,7 +96,8 @@ public class AccountController {
             responses = {
                     @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
-            }
+            },
+            tags = {"User"}
     )
     public static Handler fetchAccounts = ctx -> {
         List<Account> accounts;
@@ -111,7 +114,8 @@ public class AccountController {
                     @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
-            }
+            },
+            tags = {"User"}
     )
     public static Handler updateAccount = ctx -> {
         String id = ctx.pathParam("id");
@@ -132,7 +136,8 @@ public class AccountController {
                     @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
-            }
+            },
+            tags = {"User"}
     )
     public static Handler deleteAccount = ctx -> {
         String id = ctx.pathParam("id");
