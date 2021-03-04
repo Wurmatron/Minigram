@@ -17,7 +17,7 @@ class LoginPage extends React.Component{
             <div>
                 <div className="sticky-top">
                     <nav className="navbar navbar-light bg-light border-bottom border-dark">
-                        <span className="navbar-text headerText">Minigram </span>
+                        <span className="navbar-text headerText text-dark">Minigram </span>
                     </nav>
                 </div>
                 <div className="container h-100 mt-2">
