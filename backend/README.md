@@ -60,7 +60,7 @@ endpoint: `POST` `/api/posts/:id`
 ```
 - Update post 
 
-endpoint: `/api/posts/:id`
+endpoint: `PUT` `/api/posts/:id`
   
 ```json
 {
@@ -79,7 +79,7 @@ endpoint: `DELETE` `/api/posts/:id`
 ### Comments
 - Get all the comments for a post
 
-endpoint: `GET` `/api/posts/:id/comments`
+endpoint: `GET` `/api/comments/posts/:id`
 
 ```json
 {
@@ -145,6 +145,44 @@ endpoint: `/api/accounts/:id`
 - Delete account
 
 endpoint: `DELETE` `/api/accounts/:id`
+
+```json
+{
+  
+}
+```
+### Followings
+
+- Get followers for specific account
+
+endpoint: `/accounts/:id/followers`
+
+```json
+{
+  
+}
+```
+- Get followings for specific account
+
+endpoint: `POST` `/accounts/:id/following`
+
+```json
+{
+  
+}
+```
+- Follow account
+
+endpoint: `/accounts/follow/:id`
+
+```json
+{
+  
+}
+```
+- Unfollow account
+
+endpoint: `DELETE` `/accounts/unfollow/:id`
 
 ```json
 {
