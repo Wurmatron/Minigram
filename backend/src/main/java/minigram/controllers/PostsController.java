@@ -47,7 +47,10 @@ public class PostsController {
     )
     public static Handler fetchPost = ctx -> {
         Post post = Post.getPostById(ctx.pathParam("id"));
-        // TODO Error, post == null?
+        if (post == null){
+            ctx.contentType("application/json").status(404).result(responseMessage("Post Not Found"));
+            return;
+        }
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(post)));
     };
 

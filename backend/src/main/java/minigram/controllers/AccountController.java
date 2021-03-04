@@ -114,13 +114,17 @@ public class AccountController {
                     @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
+                    @OpenApiResponse(status = "422", description = "Account ID and Path don't match"),
             },
             tags = {"User"}
     )
     public static Handler updateAccount = ctx -> {
         String id = ctx.pathParam("id");
         Account account = GSON.fromJson(ctx.body(), Account.class);
-        // TODO ID not used
+        if(account.id != id) {
+            ctx.contentType("application/json").status(422).result(responseData("Account ID and Path don't match (" + id + ", " + account.id + ")"));
+            return;
+        }
         if (Account.updateAccount(account)) {
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(account)));
         } else {
