@@ -46,9 +46,9 @@ public class Routes {
 
     @Endpoint
     public void followings(Javalin app) {
-//        app.get("/posts/:id/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.get("/posts/:id/comments", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.put("/posts/:id/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.delete("/posts/:id/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.get("/accounts/:id/followers", FollowingsController.fetchAccountFollowers, roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.get("/accounts/:id/following", FollowingsController.fetchAccountFollowing, roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.put("/accounts/:id/follow/:id", FollowingsController.followAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.delete("/accounts/:id/unfollow/:id", FollowingsController.unfollowAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 }
