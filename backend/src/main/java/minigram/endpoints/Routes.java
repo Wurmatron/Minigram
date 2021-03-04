@@ -3,6 +3,7 @@ package minigram.endpoints;
 import io.javalin.Javalin;
 import minigram.controllers.AccountController;
 import minigram.controllers.AuthController;
+import minigram.controllers.FollowingsController;
 import minigram.controllers.PostsController;
 import minigram.endpoints.EndpointSecurity.AuthRoles;
 import minigram.utils.anotations.Endpoint;
