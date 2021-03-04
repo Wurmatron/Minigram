@@ -1,6 +1,7 @@
 package minigram.controllers;
 
 import io.javalin.http.Handler;
+import io.javalin.plugin.openapi.annotations.*;
 import minigram.models.Account;
 import minigram.utils.EncryptionUtils;
 import minigram.utils.SQLUtils;
@@ -23,6 +24,16 @@ public class AccountController {
     private AccountController() {
     }
 
+    @OpenApi(
+            summary = "Register / Create a user account",
+            description = "Register / Create a user account",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
+            responses = {
+                    @OpenApiResponse(status = "201", description = "User has been created"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "422", description = "Invalid Json, Account Exists"),
+            }
+    )
     public static Handler registerNewAccount = ctx -> {
         Account account = GSON.fromJson(ctx.body(), Account.class);
 //        check if email exists already
@@ -54,6 +65,16 @@ public class AccountController {
         }
     };
 
+    @OpenApi(
+            summary = "Get account by id",
+            description = "Get account by id",
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "404", description = "Account not found"),
+            }
+    )
     public static Handler fetchAccount = ctx -> {
         String id = ctx.pathParam("id");
         Account account = new Account();
@@ -67,25 +88,52 @@ public class AccountController {
         ctx.contentType("application/json").status(200).result(GSON.toJson(account));
     };
 
-
+    @OpenApi(
+            summary = "Get all accounts",
+            description = "Get all accounts",
+            responses = {
+                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+            }
+    )
     public static Handler fetchAccounts = ctx -> {
         List<Account> accounts;
         accounts = Account.getAccounts();
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accounts.toArray(new Account[0]))));
     };
 
+    @OpenApi(
+            summary = "Update account",
+            description = "Update account",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "404", description = "Account not found"),
+            }
+    )
     public static Handler updateAccount = ctx -> {
         String id = ctx.pathParam("id");
         Account account = GSON.fromJson(ctx.body(), Account.class);
-
+        // TODO ID not used
         if (Account.updateAccount(account)) {
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(account)));
         } else {
-            ctx.contentType("application/json").status(201).result(responseMessage("Updating Account failed"));
+            ctx.contentType("application/json").status(404).result(responseMessage("Updating Account failed"));
         }
     };
 
-
+    @OpenApi(
+            summary = "Delete account",
+            description = "Delete account",
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "404", description = "Account not found"),
+            }
+    )
     public static Handler deleteAccount = ctx -> {
         String id = ctx.pathParam("id");
 

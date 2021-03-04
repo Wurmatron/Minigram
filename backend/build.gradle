@@ -27,6 +27,7 @@ dependencies {
     compile "io.javalin:javalin:${javalin_verson}"
     implementation "org.slf4j:slf4j-simple:1.7.30"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.71"
+    implementation "io.javalin:javalin-openapi:${javalin_openapi_version}"
 }
 
 spotless {
