@@ -22,9 +22,9 @@ public class AuthController {
     @OpenApi(
             summary = "Login",
             description = "Login",
-            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = AccountWithToken.class)),
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
             responses = {
-                    @OpenApiResponse(status = "201", description = "User has logged in"),
+                    @OpenApiResponse(status = "201", description = "User has logged in", content = @OpenApiContent(from = AccountWithToken.class)),
                     @OpenApiResponse(status = "401", description = "Invalid Credentials"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
             },
@@ -55,7 +55,7 @@ public class AuthController {
             description = "Logout",
             requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = AccountWithToken.class)),
             responses = {
-                    @OpenApiResponse(status = "201", description = "User has logged out"),
+                    @OpenApiResponse(status = "201", description = "User has logged out", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "404", description = "Token does not exist"),
             },
             tags = {"Auth"}

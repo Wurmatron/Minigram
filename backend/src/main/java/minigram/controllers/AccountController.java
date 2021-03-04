@@ -29,7 +29,7 @@ public class AccountController {
             description = "Register / Create a user account",
             requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
             responses = {
-                    @OpenApiResponse(status = "201", description = "User has been created"),
+                    @OpenApiResponse(status = "201", description = "User has been created", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "422", description = "Invalid Json, Account Exists"),
             },
@@ -71,7 +71,7 @@ public class AccountController {
             description = "Get account by id",
             pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
             responses = {
-                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
             },
@@ -94,7 +94,7 @@ public class AccountController {
             summary = "Get all accounts",
             description = "Get all accounts",
             responses = {
-                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "200", description = "User Found, Requested data is returned",content = @OpenApiContent(from = Account[].class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
             },
             tags = {"User"}
@@ -133,7 +133,7 @@ public class AccountController {
             description = "Delete account",
             pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
             responses = {
-                    @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
+                    @OpenApiResponse(status = "201", description = "User Deleted", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
             },

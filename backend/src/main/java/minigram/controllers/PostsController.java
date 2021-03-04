@@ -1,7 +1,10 @@
 package minigram.controllers;
 
 import io.javalin.http.Handler;
-import minigram.models.Account;
+import io.javalin.plugin.openapi.annotations.OpenApi;
+import io.javalin.plugin.openapi.annotations.OpenApiContent;
+import io.javalin.plugin.openapi.annotations.OpenApiParam;
+import io.javalin.plugin.openapi.annotations.OpenApiResponse;
 import minigram.models.Post;
 
 import java.util.List;
@@ -16,14 +19,35 @@ public class PostsController {
 
     }
 
+    @OpenApi(
+            summary = "Get Posts",
+            description = "Get Posts",
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Get posts", content = @OpenApiContent(from = Post[].class)),
+                    @OpenApiResponse(status = "401", description = "Invalid Session Key"),
+            },
+            tags = {"Posts"}
+    )
     public static Handler fetchPosts = ctx -> {
         List<Post> posts;
         posts = Post.getPosts();
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(posts.toArray(new Post[0]))));
     };
 
+    @OpenApi(
+            summary = "Get Post by ID",
+            description = "Get Post by ID",
+            pathParams = {@OpenApiParam(name = "id",required = true,description = "Post ID")},
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Get posts", content = @OpenApiContent(from = Post.class)),
+                    @OpenApiResponse(status = "401", description = "Invalid Session Key"),
+                    @OpenApiResponse(status = "404", description = "Post not found"),
+            },
+            tags = {"Posts"}
+    )
     public static Handler fetchPost = ctx -> {
         Post post = Post.getPostById(ctx.pathParam("id"));
+        // TODO Error, post == null?
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(post)));
     };
 
@@ -32,7 +56,16 @@ public class PostsController {
 
     };
 
-    //    TODO: Implement
+    @OpenApi(
+            summary = "Delete post",
+            description = "Delete post",
+            responses = {
+                    @OpenApiResponse(status = "201", description = "Delete Post", content = @OpenApiContent(from = Post.class)),
+                    @OpenApiResponse(status = "401", description = "Invalid Session Key"),
+                    @OpenApiResponse(status = "404", description = "Post not found"),
+            },
+            tags = {"Posts"}
+    )
     public static Handler deletePost = ctx -> {
         String id = ctx.pathParam("id");
 
