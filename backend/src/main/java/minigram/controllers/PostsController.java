@@ -51,10 +51,35 @@ public class PostsController {
         }
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(post)));
     };
-    //    TODO: Implement
-    public static Handler updatePost = ctx -> {
 
+    @OpenApi(
+            summary = "Update post",
+            description = "Update post",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Post ID")},
+            responses = {
+                    @OpenApiResponse(status = "201", description = "Post Found, Requested data is returned"),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "404", description = "Post not found"),
+                    @OpenApiResponse(status = "422", description = "Post ID and Path don't match"),
+            },
+            tags = {"Posts"}
+    )
+    public static Handler updatePost = ctx -> {
+        String id = ctx.pathParam("id");
+        Post post = GSON.fromJson(ctx.body(), Post.class);
+        if(!post.id.equals(id)) {
+            ctx.contentType("application/json").status(422).result(responseData("Post ID and Path don't match (" + id + ", " + post.id + ")"));
+            return;
+        }
+        if (Post.updatePost(post)) {
+            ctx.contentType("application/json").status(201).result(GSON.toJson(post));
+        } else {
+            ctx.contentType("application/json").status(404).result(responseMessage("Updating Account failed"));
+        }
     };
+
+
     @OpenApi(
             summary = "Delete post",
             description = "Delete post",
