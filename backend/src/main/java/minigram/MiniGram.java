@@ -4,6 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import io.javalin.Javalin;
+import io.javalin.http.util.RedirectToLowercasePathPlugin;
+import io.javalin.plugin.openapi.OpenApiOptions;
+import io.javalin.plugin.openapi.OpenApiPlugin;
+import io.javalin.plugin.openapi.ui.SwaggerOptions;
+import io.swagger.v3.oas.models.info.Info;
+import minigram.endpoints.EndpointSecurity;
 import minigram.models.Config;
 import minigram.sql.DatabaseManager;
 import minigram.utils.anotations.Endpoint;
@@ -15,10 +21,13 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static io.javalin.core.security.SecurityUtil.roles;
 
 /**
  * Main program for the backend of MiniGram
@@ -47,7 +56,11 @@ public class MiniGram {
         EXEC = Executors.newFixedThreadPool(config.preformance.general_threads);
 
         // Setup Http Server
-        server = Javalin.create().start(config.general.port);
+        server = Javalin.create(conf -> {
+            conf.registerPlugin(new OpenApiPlugin(new OpenApiOptions(new Info().version("1.0.0").description("MiniGram Rest API")).path("/swagger-docs").swagger(new SwaggerOptions("/swagger").title("MiniGram Swagger")).roles(Collections.singleton(EndpointSecurity.AuthRoles.ADMIN))));
+            conf.registerPlugin(new RedirectToLowercasePathPlugin());
+        });
+        server.start(config.general.port);
         registerEndpoints();    // Locate and register all endpoints
         server.get("/", ctx -> ctx.result("Hello World"));
         // Startup DB

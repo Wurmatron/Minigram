@@ -1,6 +1,7 @@
 package minigram.controllers;
 
 import io.javalin.http.Handler;
+import io.javalin.plugin.openapi.annotations.*;
 import minigram.MiniGram;
 import minigram.models.Account;
 import minigram.models.AccountWithToken;
@@ -18,6 +19,17 @@ public class AuthController {
     // Token, Account
     public static NonBlockingHashMap<String, Account> tokens = new NonBlockingHashMap<>();
 
+    @OpenApi(
+            summary = "Login",
+            description = "Login",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
+            responses = {
+                    @OpenApiResponse(status = "201", description = "User has logged in", content = @OpenApiContent(from = AccountWithToken.class)),
+                    @OpenApiResponse(status = "401", description = "Invalid Credentials"),
+                    @OpenApiResponse(status = "404", description = "Account not found"),
+            },
+            tags = {"Auth"}
+    )
     public static Handler login = ctx -> {
         String data = ctx.body();
         Account account = MiniGram.GSON.fromJson(data, Account.class);
@@ -38,6 +50,16 @@ public class AuthController {
         ctx.contentType("application/json").status(401).result(responseMessage("Invalid credentials"));
     };
 
+    @OpenApi(
+            summary = "Logout",
+            description = "Logout",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = AccountWithToken.class)),
+            responses = {
+                    @OpenApiResponse(status = "201", description = "User has logged out", content = @OpenApiContent(from = Account.class)),
+                    @OpenApiResponse(status = "404", description = "Token does not exist"),
+            },
+            tags = {"Auth"}
+    )
     public static Handler logout = ctx -> {
         AccountWithToken account = MiniGram.GSON.fromJson(ctx.body(), AccountWithToken.class);
         if (tokens.containsKey(account.token)) {

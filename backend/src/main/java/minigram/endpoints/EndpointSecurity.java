@@ -34,7 +34,7 @@ public class EndpointSecurity {
         });
     }
 
-    enum AuthRoles implements Role {
+    public enum AuthRoles implements Role {
         USER, ANONYMOUS, ADMIN
     }
 }

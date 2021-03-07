@@ -173,7 +173,7 @@ endpoint: `POST` `/accounts/:id/following`
 ```
 - Follow account
 
-endpoint: `/accounts/follow/:id`
+endpoint: `POST` `/accounts/follow/:id`
 
 ```json
 {
