@@ -15,8 +15,21 @@ import static minigram.utils.HttpUtils.responseData;
 
 public class FollowingsController {
 
+    @OpenApi(
+            summary = "Get an accounts' followers",
+            description = "Get all the accounts that follow this account",
+            pathParams = {@OpenApiParam(name = "id", required = true, description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "200", description = "Has followers, A list of accounts is returned", content = @OpenApiContent(from = Account.class)),
+                    @OpenApiResponse(status = "200", description = "No followers, An empty list is returned", content = @OpenApiContent(from = Account.class)),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+            },
+            tags = {"User"}
+    )
     //    TODO: implement
     public static Handler fetchAccountFollowers = ctx -> {
+        String id = ctx.pathParam("id");
+
 
     };
 
@@ -48,13 +61,34 @@ public class FollowingsController {
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accounts)));
     };
 
+    @OpenApi(
+            summary = "Follow an account",
+            description = "Follow this account",
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "201", description = "Adds user to the logged in user's list of followings", content = @OpenApiContent(from = Account.class)),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+            },
+            tags = {"User"}
+    )
     //    TODO: implement
     public static Handler followAccount = ctx -> {
+        String id = ctx.pathParam("id");
 
     };
 
+    @OpenApi(
+            summary = "Unfollow an account",
+            description = "Unfollow this user account",
+            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            responses = {
+                    @OpenApiResponse(status = "201", description = "Removes user from user's list of followings", content = @OpenApiContent(from = Account.class)),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+            },
+            tags = {"User"}
+    )
     //    TODO: implement
     public static Handler unfollowAccount = ctx -> {
-
+        String id = ctx.pathParam("id");
     };
 }
