@@ -1,23 +1,22 @@
 package minigram.controllers;
 
+import com.google.gson.JsonSyntaxException;
 import io.javalin.http.Handler;
-import io.javalin.plugin.openapi.annotations.OpenApi;
-import io.javalin.plugin.openapi.annotations.OpenApiContent;
-import io.javalin.plugin.openapi.annotations.OpenApiParam;
-import io.javalin.plugin.openapi.annotations.OpenApiResponse;
+import io.javalin.plugin.openapi.annotations.*;
+import joptsimple.internal.Strings;
+import minigram.models.Account;
 import minigram.models.Post;
+import minigram.utils.SQLUtils;
 
+import java.sql.Statement;
 import java.util.List;
 
 import static minigram.MiniGram.GSON;
+import static minigram.MiniGram.dbManager;
 import static minigram.utils.HttpUtils.responseData;
 import static minigram.utils.HttpUtils.responseMessage;
 
 public class PostsController {
-
-    public void PostController() {
-
-    }
 
     @OpenApi(
             summary = "Get Posts",
@@ -33,11 +32,10 @@ public class PostsController {
         posts = Post.getPosts();
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(posts.toArray(new Post[0]))));
     };
-
     @OpenApi(
             summary = "Get Post by ID",
             description = "Get Post by ID",
-            pathParams = {@OpenApiParam(name = "id",required = true,description = "Post ID")},
+            pathParams = {@OpenApiParam(name = "id", required = true, description = "Post ID")},
             responses = {
                     @OpenApiResponse(status = "200", description = "Get posts", content = @OpenApiContent(from = Post.class)),
                     @OpenApiResponse(status = "401", description = "Invalid Session Key"),
@@ -47,18 +45,16 @@ public class PostsController {
     )
     public static Handler fetchPost = ctx -> {
         Post post = Post.getPostById(ctx.pathParam("id"));
-        if (post == null){
+        if (post == null) {
             ctx.contentType("application/json").status(404).result(responseMessage("Post Not Found"));
             return;
         }
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(post)));
     };
-
     //    TODO: Implement
     public static Handler updatePost = ctx -> {
 
     };
-
     @OpenApi(
             summary = "Delete post",
             description = "Delete post",
@@ -74,20 +70,60 @@ public class PostsController {
 
         Post post = Post.getPostById(id);
 
-        if (post == null){
+        if (post == null) {
             ctx.contentType("application/json").status(404).result(responseMessage("Post Not Found"));
             return;
         }
 
         Boolean postDeleted = Post.deletePost(id);
 
-        if (postDeleted){
+        if (postDeleted) {
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(post)));
         }
     };
 
-    //    TODO: Implement
+    @OpenApi(
+            summary = "Create a new post",
+            description = "Create a new post",
+            requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Post.class)),
+            responses = {
+                    @OpenApiResponse(status = "201", description = "Post has been created", content = @OpenApiContent(from = Post.class)),
+                    @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "422", description = "Invalid Json, No Account, No Data"),
+            },
+            tags = {"Posts"}
+    )
     public static Handler createPost = ctx -> {
-
+        try {
+            Post post = GSON.fromJson(ctx.body(), Post.class);
+            post.id = null;
+            post.text = SQLUtils.sanitizeText(post.text);
+            Account account = Account.getAccountById(post.posted_by_id);
+            if (account != null) {
+                if (!post.text.isEmpty() || !post.image.isEmpty()) {
+                    String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%');"
+                            .replaceAll("%likes_ids%", Strings.join(post.likes_ids, " "))
+                            .replaceAll("%comment_ids%", Strings.join(post.comments_ids, " "))
+                            .replaceAll("%txt%", post.text)
+                            .replaceAll("%image%", post.image)
+                            .replaceAll("%posted_id%", post.posted_by_id);
+                    Statement statement = dbManager.getConnection().createStatement();
+                    try {
+                        statement.execute(query);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    ctx.contentType("application/json").status(201).result(GSON.toJson(post));
+                    return;
+                } else {
+                    ctx.contentType("application/json").status(422).result(responseMessage("Post has no data!"));
+                }
+                ctx.contentType("application/json").status(201).result(GSON.toJson(account));
+            } else {
+                ctx.contentType("application/json").status(422).result(responseMessage("User does not exist!"));
+            }
+        } catch (JsonSyntaxException e) {
+            ctx.contentType("application/json").status(422).result(responseMessage("Invalid Json!"));
+        }
     };
 }

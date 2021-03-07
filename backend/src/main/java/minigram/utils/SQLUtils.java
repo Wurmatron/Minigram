@@ -9,4 +9,8 @@ public class SQLUtils {
                 replaceAll("FROM", "").
                 replaceAll("CHAR", "");
     }
+
+    public static String sanitizeText(String text) {
+        return text.replaceAll("'", "").replaceAll(";", "");
+    }
 }
