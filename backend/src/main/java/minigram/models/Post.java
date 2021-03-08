@@ -100,4 +100,42 @@ public class Post extends BaseModel {
 
         return false;
     }
+
+    public static Boolean updatePost(Post post) throws NoSuchFieldException, IllegalAccessException {
+        StringBuilder query = new StringBuilder();
+        query.append("UPDATE posts SET ");
+        for (String type : Post.POST_COLUMNS) {
+            if (type.equalsIgnoreCase("id") || type.equalsIgnoreCase("posted_by_id"))
+                continue;
+            if(type.equalsIgnoreCase("likes_ids") || type.equalsIgnoreCase("comments_ids")) {
+                String[] data = (String[]) post.getClass().getDeclaredField(type).get(post);
+                if(data == null || data.length == 0)
+                    continue;
+            } else {
+                String data = (String) post.getClass().getDeclaredField(type).get(post);
+                if(data == null || data.isEmpty())
+                    continue;
+            }
+            query.append("`%type%`='%value%', ".replaceAll("%type%", type).replaceAll("%value%", type.equalsIgnoreCase("likes_ids") ||  type.equalsIgnoreCase("comments_ids") ?
+                    String.join(" ", (String[]) post.getClass().getDeclaredField(type).get(post)) :
+                    (String) post.getClass().getDeclaredField(type).get(post)));
+        }
+        String type = query.toString();
+        type = type.substring(0,type.length() - 2);
+        query = new StringBuilder();
+        query.append(type);
+        query.append(" WHERE id='%id%';".replaceAll("%id%", post.id));
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            int set = statement.executeUpdate(query.toString());
+
+            if (set >= 1){
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

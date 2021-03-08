@@ -64,7 +64,7 @@ CREATE TABLE `comments` (
 CREATE TABLE `posts` (
   `id` int(11) NOT NULL,
   `likes_ids` text COLLATE utf8mb4_general_ci NOT NULL,
-  `comment_ids` int(11) NOT NULL,
+  `comment_ids` text COLLATE utf8mb4_general_ci NOT NULL,
   `text` text COLLATE utf8mb4_general_ci NOT NULL,
   `image` text COLLATE utf8mb4_general_ci NOT NULL,
   `posted_id` int(11) NOT NULL

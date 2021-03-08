@@ -32,9 +32,9 @@ public class Routes {
     public void post(Javalin app) {
         app.get("/posts/:id", PostsController.fetchPost,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.get("posts", PostsController.fetchPosts,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.put("/posts/:id", PostsController.updatePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.put("/posts/:id", PostsController.updatePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.delete("/posts/:id", PostsController.deletePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.post("/posts", PostsController.createPost, roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.post("/posts", PostsController.createPost, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
