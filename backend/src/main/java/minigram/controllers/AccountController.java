@@ -1,5 +1,6 @@
 package minigram.controllers;
 
+import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.plugin.openapi.annotations.*;
 import minigram.models.Account;
@@ -8,13 +9,14 @@ import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
-import static minigram.utils.HttpUtils.responseData;
-import static minigram.utils.HttpUtils.responseMessage;
+import static minigram.utils.HttpUtils.*;
 import static minigram.utils.SQLUtils.sanitize;
 
 public class AccountController {
@@ -73,18 +75,34 @@ public class AccountController {
             responses = {
                     @OpenApiResponse(status = "200", description = "User Found, Requested data is returned", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "422", description = "Validation errors"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
             },
             tags = {"User"}
     )
     public static Handler fetchAccount = ctx -> {
+
+//        validate
+        Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0.");
+//        collect errors
+        Map<String, List<String>> errors = stringValidator.errors();
+
+//        return validation errors if there is any
+          if (!errors.isEmpty()){
+              ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+              return;
+          }
+
         String id = ctx.pathParam("id");
+
         Account account = new Account();
 
         account = Account.getAccountById(id);
 
         if (account == null){
             ctx.contentType("application/json").status(404).result(responseMessage("Account Not Found"));
+            return;
         }
 
         ctx.contentType("application/json").status(200).result(GSON.toJson(account));
@@ -114,13 +132,27 @@ public class AccountController {
                     @OpenApiResponse(status = "201", description = "User Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
-                    @OpenApiResponse(status = "422", description = "Account ID and Path don't match"),
+                    @OpenApiResponse(status = "422", description = "Validation errors"),
             },
             tags = {"User"}
     )
     public static Handler updateAccount = ctx -> {
+        //        validate
+        Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0.");
+//        collect errors
+        Map<String, List<String>> errors = stringValidator.errors();
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
         String id = ctx.pathParam("id");
+
         Account account = GSON.fromJson(ctx.body(), Account.class);
+
         if(account.id != id) {
             ctx.contentType("application/json").status(422).result(responseData("Account ID and Path don't match (" + id + ", " + account.id + ")"));
             return;
@@ -139,11 +171,25 @@ public class AccountController {
             responses = {
                     @OpenApiResponse(status = "201", description = "User Deleted", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "422", description = "Validation errors"),
                     @OpenApiResponse(status = "404", description = "Account not found"),
             },
             tags = {"User"}
     )
     public static Handler deleteAccount = ctx -> {
+
+        //        validate
+        Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0.");
+//        collect errors
+        Map<String, List<String>> errors = stringValidator.errors();
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
         String id = ctx.pathParam("id");
 
         Account account = Account.getAccountById(id);
