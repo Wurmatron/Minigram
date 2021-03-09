@@ -178,7 +178,7 @@ public class AccountController {
     )
     public static Handler deleteAccount = ctx -> {
 
-        //        validate
+//        validate
         Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0.");
 //        collect errors

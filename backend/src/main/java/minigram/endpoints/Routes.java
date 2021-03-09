@@ -51,7 +51,7 @@ public class Routes {
     public void followings(Javalin app) {
         app.get("/accounts/:id/followers", FollowingsController.fetchAccountFollowers, roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.get("/accounts/:id/following", FollowingsController.fetchAccountFollowing, roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.put("/accounts/follow/:id", FollowingsController.followAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.delete("/accounts/:id/unfollow/:id", FollowingsController.unfollowAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.put("/accounts/:auth_id/follow/:follow_id", FollowingsController.followAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
+//        app.delete("/accounts/:auth_id/unfollow/:unfollow_id", FollowingsController.unfollowAccount, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 }
