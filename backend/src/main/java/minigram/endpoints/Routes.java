@@ -35,6 +35,8 @@ public class Routes {
         app.put("/posts/:id", PostsController.updatePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.delete("/posts/:id", PostsController.deletePost,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.post("/posts", PostsController.createPost, roles(AuthRoles.USER,AuthRoles.ADMIN));
+
+//        app.get("/feeds", PostsController.fetchLatestFeeds, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
