@@ -59,6 +59,7 @@ public class MiniGram {
         server = Javalin.create(conf -> {
             conf.registerPlugin(new OpenApiPlugin(new OpenApiOptions(new Info().version("1.0.0").description("MiniGram Rest API")).path("/swagger-docs").swagger(new SwaggerOptions("/swagger").title("MiniGram Swagger")).roles(Collections.singleton(EndpointSecurity.AuthRoles.ADMIN))));
             conf.registerPlugin(new RedirectToLowercasePathPlugin());
+            conf.enableCorsForAllOrigins();
         });
         server.start(config.general.port);
         registerEndpoints();    // Locate and register all endpoints
