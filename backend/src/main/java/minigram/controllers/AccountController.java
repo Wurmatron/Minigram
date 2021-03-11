@@ -157,7 +157,7 @@ public class AccountController {
 
         Account account = GSON.fromJson(ctx.body(), Account.class);
 
-        if(account.id != id) {
+        if(!account.id.equals(id)) {
             ctx.contentType("application/json").status(422).result(responseData("Account ID and Path don't match (" + id + ", " + account.id + ")"));
             return;
         }

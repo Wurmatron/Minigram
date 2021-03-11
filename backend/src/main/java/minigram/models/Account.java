@@ -36,7 +36,7 @@ public class Account extends BaseModel {
         this.following_ids = following_ids;
     }
 
-    public static Account getAccountById(String id){
+    public static Account getAccountById(String id) {
         String query = "";
         Account account = new Account();
         if (isNum(id)) {
@@ -48,7 +48,7 @@ public class Account extends BaseModel {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
 
-            if(!set.next()){
+            if (!set.next()) {
                 return null;
             }
 
@@ -65,7 +65,7 @@ public class Account extends BaseModel {
         return account;
     }
 
-    public static Account getAccountByEmail(String email){
+    public static Account getAccountByEmail(String email) {
         String query = "";
         Account account = new Account();
 
@@ -75,7 +75,7 @@ public class Account extends BaseModel {
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
 
-            if (!set.next()){
+            if (!set.next()) {
                 return null;
             }
 
@@ -93,7 +93,7 @@ public class Account extends BaseModel {
         return account;
     }
 
-    public static List<Account> getAccounts(){
+    public static List<Account> getAccounts() {
         String query = "SELECT * FROM accounts";
         List<Account> accounts = new ArrayList<>();
         try {
@@ -116,23 +116,36 @@ public class Account extends BaseModel {
         return accounts;
     }
 
-//    TODO: Fix
     public static Boolean updateAccount(Account account) throws NoSuchFieldException, IllegalAccessException {
         StringBuilder query = new StringBuilder();
         query.append("UPDATE accounts SET ");
         for (String type : Account.ACCOUNT_COLUMNS) {
             if (type.equals("id"))
                 continue;
-            query.append("'%type%' = '%value%', ".replaceAll("%type%", type).replaceAll("%value%", type.equalsIgnoreCase("following_ids") ?
-                    String.join(",", (String[]) account.getClass().getDeclaredField(type).get(account)) :
-                    (String) account.getClass().getDeclaredField(type).get(account)));
+            try {
+                String data;
+                if (type.equalsIgnoreCase("following_ids")) {
+                    data = String.join(",", (String[]) account.getClass().getDeclaredField(type).get(account));
+                } else {
+                    data = (String) account.getClass().getDeclaredField(type).get(account);
+                }
+                // Make sure its not null or empty
+                if (data == null || data.isEmpty()) {
+                    continue;
+                }
+                query.append("`%type%` = '%value%', ".replaceAll("%type%", type).replaceAll("%value%", data));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        query.append(" WHERE id='%id%';".replaceAll("%id", account.id));
+        String temp = query.toString();
+        temp = temp.substring(0, temp.lastIndexOf(","));
+        temp = temp + " WHERE id='%id%';".replaceAll("%id%", account.id);
         try {
             Statement statement = dbManager.getConnection().createStatement();
-            int set = statement.executeUpdate(query.toString());
+            int set = statement.executeUpdate(temp);
 
-            if (set >= 1){
+            if (set >= 1) {
                 return true;
             }
         } catch (Exception e) {
@@ -143,7 +156,7 @@ public class Account extends BaseModel {
     }
 
 
-    public static Boolean delete(String id){
+    public static Boolean delete(String id) {
 
         StringBuilder query = new StringBuilder();
         query.append("DELETE FROM accounts WHERE id=%id%;".replaceAll("%id%", SQLUtils.sanitize(id)));
@@ -152,7 +165,7 @@ public class Account extends BaseModel {
             int set = statement.executeUpdate(query.toString());
 
             // check if query was successful
-            if (set >= 1){
+            if (set >= 1) {
                 return true;
             }
 
