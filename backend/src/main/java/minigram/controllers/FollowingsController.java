@@ -7,8 +7,10 @@ import io.javalin.plugin.openapi.annotations.OpenApiContent;
 import io.javalin.plugin.openapi.annotations.OpenApiParam;
 import io.javalin.plugin.openapi.annotations.OpenApiResponse;
 import minigram.models.Account;
+import minigram.utils.CrudDataStructure;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -70,12 +72,46 @@ public class FollowingsController extends BaseController{
             responses = {
                     @OpenApiResponse(status = "201", description = "Adds user to the logged in user's list of followings", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
+                    @OpenApiResponse(status = "422", description = "Unprocessable entity, validation failed"),
             },
             tags = {"Followings"}
     )
     //    TODO: implement
     public static Handler followAccount = ctx -> {
-        String id = ctx.pathParam("id");
+        //        validate
+        Validator<Integer> auth_validator = ctx.pathParam("auth_id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist");
+
+        Validator<Integer> follow_validator = ctx.pathParam("follow_id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist");
+
+// Merges all errors from all validators in the list. Empty map if no errors exist.
+        Map<String, List<String>> errors = Validator.collectErrors(auth_validator, follow_validator);
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
+//        add followed account to logged in user's array of followed users
+        Account auth_account = Account.getAccountById(auth_validator.get().toString());
+
+        CrudDataStructure following = null;
+        if (auth_account != null) {
+            following = new CrudDataStructure(auth_account.following_ids);
+        }
+
+        following.add(follow_validator.get().toString());
+
+        auth_account.following_ids = following.arr.toArray(new String[0]);
+
+//      follow/update account
+        Account.updateAccount(auth_account);
+
+        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ follow_validator.get() + " followed"));
 
     };
 
@@ -86,7 +122,7 @@ public class FollowingsController extends BaseController{
             responses = {
                     @OpenApiResponse(status = "201", description = "Removes user from user's list of followings", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
-                    @OpenApiResponse(status = "422", description = "Unprocessible entity, validation failed"),
+                    @OpenApiResponse(status = "422", description = "Unprocessable entity, validation failed"),
             },
             tags = {"Followings"}
     )
@@ -96,10 +132,14 @@ public class FollowingsController extends BaseController{
 
 //        validate
         Validator<Integer> auth_validator = ctx.pathParam("auth_id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0.");
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist")
+                .check(n -> Account.getAccountById(n.toString()).following_ids.length-1 != 0, "Account has 0 followings");
 
-        Validator<Integer> unfollow_validator = ctx.pathParam("unfollow_id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0.");
+        Validator<Integer> unfollow_validator = ctx.pathParam("follow_id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist");
+
 
         // Merges all errors from all validators in the list. Empty map if no errors exist.
         Map<String, List<String>> errors = Validator.collectErrors(auth_validator, unfollow_validator);
@@ -110,21 +150,24 @@ public class FollowingsController extends BaseController{
             return;
         }
 
-//      remove account account id from following
-        Account auth_account = Account.getAccountById(auth_validator.getValue().toString());
+//      remove account account id from followings
+        Account auth_account = Account.getAccountById(auth_validator.get().toString());
 
         if (auth_account != null){
+            System.out.println("Before: "+ (auth_account.following_ids.length-1));
            for (int i = 0; i < auth_account.following_ids.length - 1; i++){
-                if (auth_account.following_ids[i].equals(unfollow_validator.getValue())){
+                if (auth_account.following_ids[i].equals(unfollow_validator.get().toString())){
                     removeElement(auth_account.following_ids, i);
                 }
            }
         }
 
+        System.out.println("After: "+ (auth_account.following_ids.length-1));
+
 //      unfollow/update account
         Account.updateAccount(auth_account);
 
-        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ unfollow_validator.getValue() + " unfollowed"));
+        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ unfollow_validator.get() + " unfollowed"));
     };
 
 }
