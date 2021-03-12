@@ -138,9 +138,11 @@ public class FollowingsController extends BaseController{
                 .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist")
                 .check(n -> Account.getAccountById(n.toString()).following_ids.length-1 >= 0, "Account has 0 followings");
 
-        Validator<Integer> unfollow_validator = ctx.pathParam("follow_id", Integer.class)
+        Validator<Integer> unfollow_validator = ctx.pathParam("unfollow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
-                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist");
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist")
+//                TODO: test
+                .check(n -> (new CrudDataStructure(Account.getAccountById(auth_validator.getValue().toString()).following_ids)).search(n.toString()) > -1, "This Account does not follow me");
 
 
         // Merges all errors from all validators in the list. Empty map if no errors exist.
@@ -153,13 +155,14 @@ public class FollowingsController extends BaseController{
         }
 
 //      remove account account id from followings
-        Account auth_account = Account.getAccountById(auth_validator.get().toString());
+        Account auth_account = Account.getAccountById(auth_validator.getValue().toString());
 
         if (auth_account != null){
             System.out.println("Before: "+ (auth_account.following_ids.length-1));
            for (int i = 0; i < auth_account.following_ids.length - 1; i++){
-                if (auth_account.following_ids[i].equals(unfollow_validator.get().toString())){
-                    removeElement(auth_account.following_ids, i);
+                if (auth_account.following_ids[i].equals(unfollow_validator.getValue().toString())){
+                    auth_account.following_ids = removeElement(auth_account.following_ids, i);
+                    break;
                 }
            }
         }
