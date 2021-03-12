@@ -85,7 +85,9 @@ public class FollowingsController extends BaseController{
 
         Validator<Integer> follow_validator = ctx.pathParam("follow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
-                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist");
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist")
+//                TODO: Test
+                .check(n -> (new CrudDataStructure(Account.getAccountById(auth_validator.getValue().toString()).following_ids).search(n.toString())) >= 0 , "This Account is followed already");;
 
 // Merges all errors from all validators in the list. Empty map if no errors exist.
         Map<String, List<String>> errors = Validator.collectErrors(auth_validator, follow_validator);
@@ -104,14 +106,14 @@ public class FollowingsController extends BaseController{
             following = new CrudDataStructure(auth_account.following_ids);
         }
 
-        following.add(follow_validator.get().toString());
+        following.add(follow_validator.getValue().toString());
 
         auth_account.following_ids = following.arr.toArray(new String[0]);
 
 //      follow/update account
         Account.updateAccount(auth_account);
 
-        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ follow_validator.get() + " followed"));
+        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ follow_validator.getValue() + " followed"));
 
     };
 
@@ -134,7 +136,7 @@ public class FollowingsController extends BaseController{
         Validator<Integer> auth_validator = ctx.pathParam("auth_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
                 .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist")
-                .check(n -> Account.getAccountById(n.toString()).following_ids.length-1 != 0, "Account has 0 followings");
+                .check(n -> Account.getAccountById(n.toString()).following_ids.length-1 >= 0, "Account has 0 followings");
 
         Validator<Integer> unfollow_validator = ctx.pathParam("follow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
@@ -162,12 +164,13 @@ public class FollowingsController extends BaseController{
            }
         }
 
-        System.out.println("After: "+ (auth_account.following_ids.length-1));
-
 //      unfollow/update account
-        Account.updateAccount(auth_account);
+        if (Account.updateAccount(auth_account)){
+            ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ unfollow_validator.getValue().toString() + " unfollowed"));
+            return;
+        };
 
-        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ unfollow_validator.get() + " unfollowed"));
+        ctx.contentType("application/json").status(500).result(responseMessage("Something went wring, please try again"));
     };
 
 }
