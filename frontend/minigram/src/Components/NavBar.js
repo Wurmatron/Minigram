@@ -11,7 +11,7 @@ class Navbar extends React.Component{
         return(
         <div className="sticky-top">
             <nav className="navbar navbar-light bg-light border-bottom border-dark">
-                <span className="navbar-text headerText text-dark">Minigram </span>
+                <span className="navbar-text headerText text-dark">Minigram</span>
             </nav>
         </div>
         )
