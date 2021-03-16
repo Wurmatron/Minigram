@@ -6,6 +6,7 @@ import minigram.utils.SQLUtils;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static minigram.MiniGram.dbManager;
@@ -123,9 +124,17 @@ public class Account extends BaseModel {
             if (type.equals("id"))
                 continue;
             try {
-                String data;
+                String data = "";
                 if (type.equalsIgnoreCase("following_ids")) {
-                    data = String.join(",", (String[]) account.getClass().getDeclaredField(type).get(account));
+                    String[] dataType = (String[]) account.getClass().getDeclaredField(type).get(account);
+                    List<String> temp = new ArrayList<>();
+                    Collections.addAll(temp, dataType);
+                    List<String> temp2 = new ArrayList<>();
+                    for (String t : temp) {
+                        temp2.add(t.trim().replaceAll(",", ""));
+                    }
+                    if (temp2.size() != 0)
+                        data = String.join(",", temp2.toArray(new String[0]));
                 } else {
                     data = (String) account.getClass().getDeclaredField(type).get(account);
                 }
