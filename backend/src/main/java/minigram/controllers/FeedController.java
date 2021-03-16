@@ -56,5 +56,4 @@ public class FeedController {
             ctx.contentType("application/json").status(401).result(responseMessage("No Account associated with the given token!"));
         }
     };
-
 }
