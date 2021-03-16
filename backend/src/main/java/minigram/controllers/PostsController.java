@@ -9,6 +9,7 @@ import minigram.models.Post;
 import minigram.utils.SQLUtils;
 
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.List;
 
 import static minigram.MiniGram.GSON;
@@ -126,12 +127,13 @@ public class PostsController {
             Account account = Account.getAccountById(post.posted_by_id);
             if (account != null) {
                 if (!post.text.isEmpty() || !post.image.isEmpty()) {
-                    String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%');"
+                    String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`, `timestamp`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%', '%TIMESTAMP%');"
                             .replaceAll("%likes_ids%", Strings.join(post.likes_ids, " "))
                             .replaceAll("%comment_ids%", Strings.join(post.comments_ids, " "))
                             .replaceAll("%txt%", post.text)
                             .replaceAll("%image%", post.image)
-                            .replaceAll("%posted_id%", post.posted_by_id);
+                            .replaceAll("%posted_id%", post.posted_by_id)
+                            .replaceAll("%TIMESTAMP%", post.timestamp.isEmpty() ? "" + Instant.EPOCH.getEpochSecond() : post.timestamp);
                     Statement statement = dbManager.getConnection().createStatement();
                     try {
                         statement.execute(query);
