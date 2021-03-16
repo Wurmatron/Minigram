@@ -74,6 +74,7 @@ public class PostsController {
             return;
         }
         if (Post.updatePost(post)) {
+            FeedController.propagateUpdate(post);
             ctx.contentType("application/json").status(201).result(GSON.toJson(post));
         } else {
             ctx.contentType("application/json").status(404).result(responseMessage("Updating Account failed"));
@@ -137,6 +138,7 @@ public class PostsController {
                     Statement statement = dbManager.getConnection().createStatement();
                     try {
                         statement.execute(query);
+                        FeedController.propagateUpdate(post);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
