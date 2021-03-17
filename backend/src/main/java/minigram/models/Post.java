@@ -43,10 +43,10 @@ public class Post extends BaseModel {
                 Post post = new Post();
                 post.id = set.getString("id");
                 post.likes_ids = set.getString("likes_ids").split(", ");
-                post.comments_ids = set.getString("comments_id").split(", ");
+                post.comments_ids = set.getString("comment_ids").split(", ");
                 post.text = set.getString("text");
                 post.image = set.getString("image");
-                post.posted_by_id = set.getString("posted_by_id");
+                post.posted_by_id = set.getString("posted_id");
                 post.timestamp = set.getString("timestamp");
                 posts.add(post);
             }

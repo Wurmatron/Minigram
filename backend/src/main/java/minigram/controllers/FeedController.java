@@ -104,7 +104,7 @@ public class FeedController {
         List<Post> posts = Post.getPosts();  // Not the best design, but ill work for a small project
         // Remove unrelated posts
         for (int index = 0; index < posts.size(); index++) {
-            if (!posts.get(index).id.equals(account.id)) {
+            if (!posts.get(index).posted_by_id.equals(account.id)) {
                 posts.remove(index);
             }
         }
@@ -118,7 +118,8 @@ public class FeedController {
     public static FeedEntry createEntry(Post post) {
         List<Comment> postComments = new ArrayList<>();
         for (String commentID : post.comments_ids) {
-            postComments.add(Comment.getCommentById(commentID));
+            if (commentID != null && !commentID.isEmpty())
+                postComments.add(Comment.getCommentById(commentID));
         }
         return new FeedEntry(post, postComments.toArray(new Comment[0]));
     }

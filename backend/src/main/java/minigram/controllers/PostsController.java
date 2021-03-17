@@ -129,12 +129,12 @@ public class PostsController {
             if (account != null) {
                 if (!post.text.isEmpty() || !post.image.isEmpty()) {
                     String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`, `timestamp`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%', '%TIMESTAMP%');"
-                            .replaceAll("%likes_ids%", Strings.join(post.likes_ids, " "))
-                            .replaceAll("%comment_ids%", Strings.join(post.comments_ids, " "))
+                            .replaceAll("%likes_ids%", post.likes_ids != null && post.likes_ids.length > 0 ? Strings.join(post.likes_ids, " "): "")
+                            .replaceAll("%comment_ids%", post.comments_ids != null && post.comments_ids.length > 0 ? Strings.join(post.comments_ids, " "): "")
                             .replaceAll("%txt%", post.text)
                             .replaceAll("%image%", post.image)
                             .replaceAll("%posted_id%", post.posted_by_id)
-                            .replaceAll("%TIMESTAMP%", post.timestamp.isEmpty() ? "" + Instant.EPOCH.getEpochSecond() : post.timestamp);
+                            .replaceAll("%TIMESTAMP%", post.timestamp == null || post.timestamp.isEmpty() ? "" + Instant.now().getEpochSecond() : post.timestamp);
                     Statement statement = dbManager.getConnection().createStatement();
                     try {
                         statement.execute(query);
