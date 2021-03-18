@@ -1,7 +1,6 @@
 package minigram.models;
 
 import minigram.utils.SQLUtils;
-import minigram.utils.wrapper.IModel;
 
 import java.sql.ResultSet;
 import java.sql.Statement;

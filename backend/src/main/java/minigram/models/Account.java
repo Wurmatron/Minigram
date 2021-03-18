@@ -98,7 +98,6 @@ public class Account extends BaseModel {
         String query = "SELECT * FROM accounts";
         List<Account> accounts = new ArrayList<>();
         try {
-//            TODO: don't show the password hash and salt on the front end
             Statement statement = dbManager.getConnection().createStatement();
             ResultSet set = statement.executeQuery(query);
             while (set.next()) {

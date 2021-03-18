@@ -5,11 +5,8 @@ import io.javalin.http.Handler;
 import io.javalin.plugin.openapi.annotations.*;
 import minigram.models.Account;
 import minigram.utils.EncryptionUtils;
-import minigram.utils.SQLUtils;
 
-import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -124,6 +121,10 @@ public class AccountController {
     public static Handler fetchAccounts = ctx -> {
         List<Account> accounts;
         accounts = Account.getAccounts();
+        for(Account account : accounts) {
+            account.password_hash = "";
+            account.password_salt = "";
+        }
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accounts.toArray(new Account[0]))));
     };
 

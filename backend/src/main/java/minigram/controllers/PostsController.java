@@ -155,9 +155,4 @@ public class PostsController {
             ctx.contentType("application/json").status(422).result(responseMessage("Invalid Json!"));
         }
     };
-
-//    TODO: Implement
-    public static Handler fetchLatestFeeds = ctx -> {
-
-    };
 }
