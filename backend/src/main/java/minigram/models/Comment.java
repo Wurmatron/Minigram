@@ -14,6 +14,7 @@ public class Comment extends BaseModel {
     public String id;
     public String text;
     public String commented_by_id;
+    public String[] likes_ids;
     public String timestamp;
 
     public Comment(){}
@@ -66,5 +67,23 @@ public class Comment extends BaseModel {
         return null;
     }
 
+//    TODO: Test
+    public static Boolean deleteComment(String id){
+        String query  = "DELETE FROM comments WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
 
+        try {
+            Statement statement = dbManager.getConnection().createStatement();
+            ResultSet set = statement.executeQuery(query);
+            set.next();
+
+//          check if query was successful
+            if (set.rowDeleted()){
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }
