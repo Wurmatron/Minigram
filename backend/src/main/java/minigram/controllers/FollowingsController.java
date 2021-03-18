@@ -7,12 +7,10 @@ import io.javalin.plugin.openapi.annotations.OpenApiContent;
 import io.javalin.plugin.openapi.annotations.OpenApiParam;
 import io.javalin.plugin.openapi.annotations.OpenApiResponse;
 import minigram.models.Account;
+import minigram.models.AuthService;
 import minigram.utils.CrudDataStructure;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static minigram.MiniGram.GSON;
 import static minigram.utils.HttpUtils.*;
@@ -67,8 +65,8 @@ public class FollowingsController extends BaseController{
 
     @OpenApi(
             summary = "Follow an account",
-            description = "Follow this account",
-            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            description = "Follow a specific account",
+            headers = {@OpenApiParam(name = "token", required = true, description = "Authentication Token")},
             responses = {
                     @OpenApiResponse(status = "201", description = "Adds user to the logged in user's list of followings", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
@@ -78,19 +76,19 @@ public class FollowingsController extends BaseController{
     )
     //    TODO: implement
     public static Handler followAccount = ctx -> {
-        //        validate
-        Validator<Integer> auth_validator = ctx.pathParam("auth_id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0")
-                .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist");
+//        validate
+        Validator<String> token = ctx.header("token", String.class)
+                .check(n -> AuthService.authAccount(n) != null, "Invalid Token")
+                .check(n -> AuthService.authAccount(n) .following_ids.length-1 >= 0, "Account has 0 followings");
 
-        Validator<Integer> follow_validator = ctx.pathParam("follow_id", Integer.class)
+        Validator<Integer> friend_id = ctx.pathParam("follow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
                 .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist")
 //                TODO: Test
-                .check(n -> (new CrudDataStructure(Account.getAccountById(auth_validator.getValue().toString()).following_ids).search(n.toString())) >= 0 , "This Account is followed already");;
+                .check(n -> (new CrudDataStructure(AuthService.authAccount(token.getValue()).following_ids).search(n.toString())) >= 0 , "This Account is followed already");
 
-// Merges all errors from all validators in the list. Empty map if no errors exist.
-        Map<String, List<String>> errors = Validator.collectErrors(auth_validator, follow_validator);
+//        Merges all errors from all validators in the list. Empty map if no errors exist.
+        Map<String, List<String>> errors = Validator.collectErrors(token, friend_id);
 
 //        return validation errors if there is any
         if (!errors.isEmpty()){
@@ -99,21 +97,21 @@ public class FollowingsController extends BaseController{
         }
 
 //        add followed account to logged in user's array of followed users
-        Account auth_account = Account.getAccountById(auth_validator.get().toString());
+        Account authAccount = AuthService.authAccount(ctx.header("token"));
 
         CrudDataStructure following = null;
-        if (auth_account != null) {
-            following = new CrudDataStructure(auth_account.following_ids);
+        if (authAccount != null) {
+            following = new CrudDataStructure(authAccount.following_ids);
         }
 
-        following.add(follow_validator.getValue().toString());
+        Objects.requireNonNull(following).add(Objects.requireNonNull(friend_id.getValue()).toString());
 
-        auth_account.following_ids = following.arr.toArray(new String[0]);
+        Objects.requireNonNull(authAccount).following_ids = following.arr.toArray(new String[0]);
 
 //      follow/update account
-        Account.updateAccount(auth_account);
+        Account.updateAccount(authAccount);
 
-        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ follow_validator.getValue() + " followed"));
+        ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ friend_id.getValue() + " followed"));
 
     };
 
