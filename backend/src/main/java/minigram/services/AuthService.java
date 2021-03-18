@@ -1,6 +1,7 @@
-package minigram.models;
+package minigram.services;
 
 import minigram.controllers.AuthController;
+import minigram.models.Account;
 
 public class AuthService {
 

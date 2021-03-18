@@ -7,7 +7,7 @@ import io.javalin.plugin.openapi.annotations.OpenApiContent;
 import io.javalin.plugin.openapi.annotations.OpenApiParam;
 import io.javalin.plugin.openapi.annotations.OpenApiResponse;
 import minigram.models.Account;
-import minigram.models.AuthService;
+import minigram.services.AuthService;
 import minigram.utils.CrudDataStructure;
 import org.cliffc.high_scale_lib.NonBlockingHashMap;
 
@@ -74,9 +74,25 @@ public class FollowingsController extends BaseController {
             tags = {"Followings"}
     )
     public static Handler fetchAccountFollowing = ctx -> {
-        String id = ctx.pathParam("id");
+//        String id = ctx.pathParam("id");
 
-        Account account = Account.getAccountById(id);
+        Validator<String> token = ctx.header("token", String.class)
+                .check(n -> AuthService.authAccount(n) != null, "Invalid Token");
+
+        Validator<Integer> id = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist");
+
+        //        Merges all errors from all validators in the list. Empty map if no errors exist.
+        Map<String, List<String>> errors = Validator.collectErrors(id, token);
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()) {
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
+        Account account = Account.getAccountById(Objects.requireNonNull(id.getValue()).toString());
 
         List<Account> accounts = new ArrayList<>();
 
@@ -194,7 +210,7 @@ public class FollowingsController extends BaseController {
 //      unfollow/update account
         if (Account.updateAccount(authAccount)) {
             followingCache.remove(authAccount.id);  // Force Update
-            ctx.contentType("application/json").status(201).result(responseMessage("Account with id " + friend_id.getValue().toString() + " unfollowed"));
+            ctx.contentType("application/json").status(200).result(responseMessage("Account with id " + friend_id.getValue().toString() + " unfollowed"));
             return;
         }
 
