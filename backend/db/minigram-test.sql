@@ -55,6 +55,8 @@ CREATE TABLE `comments` (
   `likes_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+ALTER TABLE comments ADD timestamp TEXT NOT NULL;
+
 -- --------------------------------------------------------
 
 --

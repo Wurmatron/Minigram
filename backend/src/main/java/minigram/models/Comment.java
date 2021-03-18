@@ -14,16 +14,18 @@ public class Comment extends BaseModel {
     public String id;
     public String text;
     public String commented_by_id;
+    public String timestamp;
 
     public Comment(){}
 
-    public Comment(String id, String text, String commented_by_id) {
+    public Comment(String id, String text, String commented_by_id, String timestamp) {
         this.id = id;
-        this.commented_by_id = commented_by_id;
         this.text = text;
+        this.commented_by_id = commented_by_id;
+        this.timestamp = timestamp;
     }
 
-//    TODO: Test
+    //    TODO: Test
     public static List<Comment> getComments(){
         String query = "SELECT * FROM comments";
         List<Comment> comments = new ArrayList<>();
@@ -35,6 +37,7 @@ public class Comment extends BaseModel {
                 comment.id = set.getString("id");
                 comment.commented_by_id = set.getString("commented_by_id");
                 comment.text = set.getString("text");
+                comment.text = set.getString("timestamp");
                 comments.add(comment);
             }
         } catch (Exception e) {
