@@ -21,6 +21,7 @@ public class FollowingsController extends BaseController{
             summary = "Get an accounts' followers",
             description = "Get all the accounts that follow this account",
             pathParams = {@OpenApiParam(name = "id", required = true, description = "Account ID")},
+            headers = {@OpenApiParam(name = "token", required = true, description = "Authentication Token")},
             responses = {
                     @OpenApiResponse(status = "200", description = "Has followers, A list of accounts is returned", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "200", description = "No followers, An empty list is returned", content = @OpenApiContent(from = Account.class)),
@@ -39,6 +40,7 @@ public class FollowingsController extends BaseController{
             summary = "Get an accounts' followings",
             description = "Get all the accounts followed by this account",
             pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            headers = {@OpenApiParam(name = "token", required = true, description = "Authentication Token")},
             responses = {
                     @OpenApiResponse(status = "200", description = "Has followers, A list of accounts is returned", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "200", description = "No followers, An empty list is returned", content = @OpenApiContent(from = Account.class)),
@@ -84,7 +86,6 @@ public class FollowingsController extends BaseController{
         Validator<Integer> friend_id = ctx.pathParam("follow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
                 .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist")
-//                TODO: Test
                 .check(n -> (new CrudDataStructure(AuthService.authAccount(token.getValue()).following_ids).search(n.toString())) >= 0 , "This Account is followed already");
 
 //        Merges all errors from all validators in the list. Empty map if no errors exist.
@@ -118,7 +119,7 @@ public class FollowingsController extends BaseController{
     @OpenApi(
             summary = "Unfollow an account",
             description = "Unfollow this user account",
-            pathParams = {@OpenApiParam(name = "id", required = true,description = "Account ID")},
+            headers = {@OpenApiParam(name = "token", required = true, description = "Authentication Token")},
             responses = {
                     @OpenApiResponse(status = "201", description = "Removes user from user's list of followings", content = @OpenApiContent(from = Account.class)),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
@@ -131,47 +132,46 @@ public class FollowingsController extends BaseController{
     public static Handler unfollowAccount = ctx -> {
 
 //        validate
-        Validator<Integer> auth_validator = ctx.pathParam("auth_id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0")
-                .check(n -> Account.getAccountById(n.toString()) != null, "Auth account does not exist")
-                .check(n -> Account.getAccountById(n.toString()).following_ids.length-1 >= 0, "Account has 0 followings");
+        Validator<String> token = ctx.header("token", String.class)
+                .check(n -> AuthService.authAccount(n) != null, "Invalid Token")
+                .check(n -> AuthService.authAccount(n) .following_ids.length-1 >= 0, "Account has 0 followings");
 
-        Validator<Integer> unfollow_validator = ctx.pathParam("unfollow_id", Integer.class)
+        Validator<Integer> friend_id = ctx.pathParam("unfollow_id", Integer.class)
                 .check(n -> n > 0, "id should be greater than 0")
-                .check(n -> Account.getAccountById(n.toString()) != null, "Account does not exist")
+                .check(n -> AuthService.authAccount(token.getValue()) != null, "Account does not exist")
 //                TODO: test
-                .check(n -> (new CrudDataStructure(Account.getAccountById(auth_validator.getValue().toString()).following_ids)).search(n.toString()) > -1, "This Account does not follow me");
+                .check(n -> (new CrudDataStructure(AuthService.authAccount(token.getValue()).following_ids)).search(n.toString()) > -1, "This Account does not follow me");
 
 
         // Merges all errors from all validators in the list. Empty map if no errors exist.
-        Map<String, List<String>> errors = Validator.collectErrors(auth_validator, unfollow_validator);
+        Map<String, List<String>> validations = Validator.collectErrors(token, friend_id);
 
-//        return validation errors if there is any
-        if (!errors.isEmpty()){
-            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+//        return validation validations if there is any
+        if (!validations.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(validations)));
             return;
         }
 
 //      remove account account id from followings
-        Account auth_account = Account.getAccountById(auth_validator.getValue().toString());
+        Account authAccount = AuthService.authAccount(ctx.header("token"));
 
-        if (auth_account != null){
-            System.out.println("Before: "+ (auth_account.following_ids.length-1));
-           for (int i = 0; i < auth_account.following_ids.length - 1; i++){
-                if (auth_account.following_ids[i].equals(unfollow_validator.getValue().toString())){
-                    auth_account.following_ids = removeElement(auth_account.following_ids, i);
+        if (authAccount != null){
+            System.out.println("Before: "+ (authAccount.following_ids.length-1));
+           for (int i = 0; i < authAccount.following_ids.length - 1; i++){
+                if (authAccount.following_ids[i].equals(friend_id.getValue().toString())){
+                    removeElement(authAccount.following_ids, i);
                     break;
                 }
            }
         }
 
 //      unfollow/update account
-        if (Account.updateAccount(auth_account)){
-            ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ unfollow_validator.getValue().toString() + " unfollowed"));
+        if (Account.updateAccount(authAccount)){
+            ctx.contentType("application/json").status(201).result(responseMessage("Account with id "+ friend_id.getValue().toString() + " unfollowed"));
             return;
         };
 
-        ctx.contentType("application/json").status(500).result(responseMessage("Something went wring, please try again"));
+        ctx.contentType("application/json").status(500).result(responseMessage("Something went wrong, please try again"));
     };
 
 }
