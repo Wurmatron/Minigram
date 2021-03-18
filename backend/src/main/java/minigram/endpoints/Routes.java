@@ -48,8 +48,8 @@ public class Routes {
     public void followings(Javalin app) {
         app.get("/accounts/:id/followers", FollowingsController.fetchAccountFollowers, roles(AuthRoles.USER, AuthRoles.ADMIN));
         app.get("/accounts/:id/following", FollowingsController.fetchAccountFollowing, roles(AuthRoles.USER, AuthRoles.ADMIN));
-        app.post("/accounts/:auth_id/follow/:follow_id", FollowingsController.followAccount, roles(AuthRoles.USER, AuthRoles.ADMIN));
-        app.post("/accounts/:auth_id/unfollow/:unfollow_id", FollowingsController.unfollowAccount, roles(AuthRoles.USER, AuthRoles.ADMIN));
+        app.post("/accounts/follow/:follow_id", FollowingsController.followAccount, roles(AuthRoles.USER, AuthRoles.ADMIN));
+        app.post("/accounts/unfollow/:unfollow_id", FollowingsController.unfollowAccount, roles(AuthRoles.USER, AuthRoles.ADMIN));
     }
 
     @Endpoint
