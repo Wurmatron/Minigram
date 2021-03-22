@@ -104,15 +104,27 @@ public class FeedController {
         List<Post> posts = Post.getPosts();  // Not the best design, but ill work for a small project
         // Remove unrelated posts
         for (int index = 0; index < posts.size(); index++) {
-            if (!posts.get(index).posted_by_id.equals(account.id)) {
+            if (!posts.get(index).posted_by_id.equals(account.id) && !isFollowing(account, posts.get(index))) {
                 posts.remove(index);
             }
         }
-        posts.sort(Comparator.comparingLong(e -> Long.parseLong(e.timestamp)));
-        for (Post post : posts) {
-            feed.add(createEntry(post));
+        try {
+            posts.sort(Comparator.comparingLong(e -> Long.parseLong(e.timestamp)));
+            for (Post post : posts) {
+                feed.add(createEntry(post));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return feed.toArray(new FeedEntry[0]);
+    }
+
+    private static boolean isFollowing(Account account, Post post) {
+        for (String follow : account.following_ids) {
+            if (follow.equals(post.posted_by_id))
+                return true;
+        }
+        return false;
     }
 
     public static FeedEntry createEntry(Post post) {
@@ -130,7 +142,18 @@ public class FeedController {
             if (post.posted_by_id.equals(account.id)) {  // Update own user's feed
                 sortedFeed.remove(token);   // Removing key will force update, upon request
                 // Update follower's
-                // TODO Update user's following this given user
+                if (FollowingsController.followingCache.containsKey(account.id)) {
+                    for (Account acc : FollowingsController.followingCache.get(account.id)) {
+                        for (String loadedToken : AuthController.tokens.keySet()) {
+                            if (acc.id.equals(AuthController.tokens.get(loadedToken).id)) {
+                                sortedFeed.remove(loadedToken);
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    FollowingsController.updateFollowing(post.posted_by_id);
+                }
             }
         }
     }

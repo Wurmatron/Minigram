@@ -45,21 +45,25 @@ public class FollowingsController extends BaseController {
             }
             ctx.contentType("application/json").status(200).result(GSON.toJson(followers));
         } else {    // Generate Entries
-            List<Account> accounts = Account.getAccounts();
-            List<Account> followingSelected = new ArrayList<>();
-            // Find followers from ID
-            for (Account account : accounts) {
-                for (String follow : account.following_ids) {
-                    if (follow.equals(id)) {
-                        followingSelected.add(account);
-                        break;
-                    }
-                }
-            }
-            followingCache.put(id, followingSelected.toArray(new Account[0]));
+            updateFollowing(id);
             ctx.contentType("application/json").status(200).result(GSON.toJson(followingCache.get(id)));
         }
     };
+
+    public static void updateFollowing(String id) {
+        List<Account> accounts = Account.getAccounts();
+        List<Account> followingSelected = new ArrayList<>();
+        // Find followers from ID
+        for (Account account : accounts) {
+            for (String follow : account.following_ids) {
+                if (follow.equals(id)) {
+                    followingSelected.add(account);
+                    break;
+                }
+            }
+        }
+        followingCache.put(id, followingSelected.toArray(new Account[0]));
+    }
 
     @OpenApi(
             summary = "Get an accounts' followings",
