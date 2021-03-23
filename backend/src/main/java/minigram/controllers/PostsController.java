@@ -121,6 +121,8 @@ public class PostsController {
             tags = {"Posts"}
     )
     public static Handler createPost = ctx -> {
+//        TODO: Validate
+
         try {
             Post post = GSON.fromJson(ctx.body(), Post.class);
             post.id = null;

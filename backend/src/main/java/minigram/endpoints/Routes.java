@@ -38,7 +38,7 @@ public class Routes {
     public void postComments(Javalin app) {
         app.get("/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.get("/comments/posts/:id", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.put("/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.post("/comments", CommentController.createComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
         app.delete("/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
