@@ -32,16 +32,14 @@ public class Routes {
         app.put("/posts/:id", PostsController.updatePost, roles(AuthRoles.USER, AuthRoles.ADMIN));
         app.delete("/posts/:id", PostsController.deletePost, roles(AuthRoles.USER, AuthRoles.ADMIN));
         app.post("/posts", PostsController.createPost, roles(AuthRoles.USER, AuthRoles.ADMIN));
-
-//        app.get("/feeds", PostsController.fetchLatestFeeds, roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint
     public void postComments(Javalin app) {
-//        app.get("/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.get("/comments/posts/:id", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.get("/comments/:id", CommentController.fetchPostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.get("/comments/posts/:id", CommentController.fetchPostComments,roles(AuthRoles.USER,AuthRoles.ADMIN));
 //        app.put("/comments/:id", CommentController.updatePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
-//        app.delete("/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
+        app.delete("/comments/:id", CommentController.deletePostComment,roles(AuthRoles.USER,AuthRoles.ADMIN));
     }
 
     @Endpoint

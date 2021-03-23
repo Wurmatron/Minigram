@@ -12,11 +12,11 @@ import minigram.utils.SQLUtils;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
-import static minigram.utils.HttpUtils.responseData;
-import static minigram.utils.HttpUtils.responseMessage;
+import static minigram.utils.HttpUtils.*;
 
 public class CommentController {
 
@@ -54,7 +54,22 @@ public class CommentController {
     )
 
     public static Handler fetchPostComment = ctx -> {
-        Comment comment = Comment.getCommentById(ctx.pathParam("id"));
+
+//        validate
+        Validator<Integer> id = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0");
+
+//        collect errors
+        Map<String, List<String>> errors = id.errors();
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
+        Comment comment = Comment.getCommentById(id.getValue().toString());
+
         if (comment == null) {
             ctx.contentType("application/json").status(404).result(responseMessage("Comment Not Found"));
             return;
@@ -72,19 +87,36 @@ public class CommentController {
             },
             tags = {"Comments"}
     )
-    public static Handler deleteComment = ctx -> {
-        String id = ctx.pathParam("id");
+    public static Handler deletePostComment = ctx -> {
+//        String id = ctx.pathParam("id");
 
-        Comment comment = Comment.getCommentById(id);
+//        validate
+        Validator<Integer> id = ctx.pathParam("id", Integer.class)
+                .check(n -> n > 0, "id should be greater than 0");
+
+        //        collect errors
+        Map<String, List<String>> errors = id.errors();
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
+        Comment comment = Comment.getCommentById(id.getValue().toString());
 
         if (comment == null) {
             ctx.contentType("application/json").status(404).result(responseMessage("Comment Not Found"));
             return;
         }
 
-        Boolean commentDeleted = Comment.deleteComment(id);
+        Boolean commentDeleted = Comment.deleteComment(id.getValue().toString());
 
         if (commentDeleted) {
+//            TODO: Remove comment id from array of referenced comments
+
+
+//            respond with the deleted comment object
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(comment)));
         }
     };
