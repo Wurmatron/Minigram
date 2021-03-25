@@ -58,7 +58,8 @@ public class CommentController {
 
 //        validate
         Validator<Integer> id = ctx.pathParam("id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0");
+                .check(n -> n > 0, "id should be greater than 0")
+                .check(n -> Comment.getCommentById(n.toString()) != null, "Comment does not exist");
 
 //        collect errors
         Map<String, List<String>> errors = id.errors();
@@ -89,13 +90,12 @@ public class CommentController {
             tags = {"Comments"}
     )
     public static Handler deletePostComment = ctx -> {
-//        String id = ctx.pathParam("id");
-
 //        validate
         Validator<Integer> id = ctx.pathParam("id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0");
+                .check(n -> n > 0, "Id should be greater than 0")
+                .check(n -> Comment.getCommentById(n.toString()) != null, "Comment does not exist");;
 
-        //        collect errors
+//        collect errors
         Map<String, List<String>> errors = id.errors();
 
 //        return validation errors if there is any
