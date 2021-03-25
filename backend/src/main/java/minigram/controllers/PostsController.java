@@ -1,21 +1,24 @@
 package minigram.controllers;
 
 import com.google.gson.JsonSyntaxException;
+import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.plugin.openapi.annotations.*;
 import joptsimple.internal.Strings;
 import minigram.models.Account;
+import minigram.models.Comment;
 import minigram.models.Post;
 import minigram.utils.SQLUtils;
 
+import java.sql.Array;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static minigram.MiniGram.GSON;
 import static minigram.MiniGram.dbManager;
-import static minigram.utils.HttpUtils.responseData;
-import static minigram.utils.HttpUtils.responseMessage;
+import static minigram.utils.HttpUtils.*;
 
 public class PostsController {
 
@@ -121,40 +124,35 @@ public class PostsController {
             tags = {"Posts"}
     )
     public static Handler createPost = ctx -> {
-//        TODO: Validate
+//        validate
+        Validator<Post> comment = ctx.bodyValidator(Post.class)
+                .check(obj -> obj.text != null, "text should not be null")
+                .check(obj -> obj.image != null, "image should not be null")
+                .check(obj -> obj.text.length() <= 255, "comment text length should at least be between 1 and 255 characters long")
+                .check(obj -> obj.likes_ids.length-1 <= 0 , "likes_ids should be empty")
+                .check(obj -> obj.comments_ids.length-1 <= 0 , "comments_ids should be empty")
+                .check(obj -> Integer.parseInt(obj.posted_by_id)  > 0, "posted_by_id should be greater than 0")
+                .check(obj -> Account.getAccountById(obj.posted_by_id)  != null, "posted by account does not exist");;
+
+//        Merges all errors from all validators in the list. Empty map if no errors exist.
+        Map<String, List<String>> errors = Validator.collectErrors(comment);
+
+//        return validation errors if there is any
+        if (!errors.isEmpty()){
+            ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
+            return;
+        }
+
+        Post post = GSON.fromJson(ctx.body(), Post.class);
 
         try {
-            Post post = GSON.fromJson(ctx.body(), Post.class);
-            post.id = null;
-            post.text = SQLUtils.sanitizeText(post.text);
-            Account account = Account.getAccountById(post.posted_by_id);
-            if (account != null) {
-                if (!post.text.isEmpty() || !post.image.isEmpty()) {
-                    String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`, `timestamp`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%', '%TIMESTAMP%');"
-                            .replaceAll("%likes_ids%", post.likes_ids != null && post.likes_ids.length > 0 ? Strings.join(post.likes_ids, " "): "")
-                            .replaceAll("%comment_ids%", post.comments_ids != null && post.comments_ids.length > 0 ? Strings.join(post.comments_ids, " "): "")
-                            .replaceAll("%txt%", post.text)
-                            .replaceAll("%image%", post.image)
-                            .replaceAll("%posted_id%", post.posted_by_id)
-                            .replaceAll("%TIMESTAMP%", post.timestamp == null || post.timestamp.isEmpty() ? "" + Instant.now().getEpochSecond() : post.timestamp);
-                    Statement statement = dbManager.getConnection().createStatement();
-                    try {
-                        statement.execute(query);
-                        FeedController.propagateUpdate(post);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    ctx.contentType("application/json").status(201).result(GSON.toJson(post));
-                    return;
-                } else {
-                    ctx.contentType("application/json").status(422).result(responseMessage("Post has no data!"));
-                }
-                ctx.contentType("application/json").status(201).result(GSON.toJson(account));
-            } else {
-                ctx.contentType("application/json").status(422).result(responseMessage("User does not exist!"));
+
+            if (Post.create(post)) {
+                ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(post)));
             }
+
         } catch (JsonSyntaxException e) {
-            ctx.contentType("application/json").status(422).result(responseMessage("Invalid Json!"));
+            ctx.contentType("application/json").status(422).result(responseMessage(e.getMessage()));
         }
     };
 }

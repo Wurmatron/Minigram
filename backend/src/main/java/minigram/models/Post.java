@@ -1,9 +1,12 @@
 package minigram.models;
 
+import joptsimple.internal.Strings;
+import minigram.controllers.FeedController;
 import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,5 +144,28 @@ public class Post extends BaseModel {
         }
 
         return false;
+    }
+
+    public static Boolean create(Post post) {
+        post.id = null;
+        String query = "INSERT INTO posts (`likes_ids`,`comment_ids`, `text`, `image`, `posted_id`, `timestamp`) VALUES ('%likes_ids%','%comment_ids%', '%txt%', '%image%', '%posted_id%', '%TIMESTAMP%');"
+                .replaceAll("%likes_ids%", post.likes_ids != null && post.likes_ids.length > 0 ? Strings.join(post.likes_ids, " "): "")
+                .replaceAll("%comment_ids%", post.comments_ids != null && post.comments_ids.length > 0 ? Strings.join(post.comments_ids, " "): "")
+                .replaceAll("%txt%", SQLUtils.sanitizeText(post.text))
+                .replaceAll("%image%", post.image)
+                .replaceAll("%posted_id%", post.posted_by_id)
+                .replaceAll("%TIMESTAMP%", post.timestamp == null || post.timestamp.isEmpty() ? "" + Instant.now().getEpochSecond() : post.timestamp);
+        Statement statement = null;
+        try {
+            statement = dbManager.getConnection().createStatement();
+            statement.execute(query);
+
+            FeedController.propagateUpdate(post);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 }
