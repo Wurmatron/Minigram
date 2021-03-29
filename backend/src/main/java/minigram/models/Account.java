@@ -4,12 +4,14 @@ import minigram.utils.EncryptionUtils;
 import minigram.utils.SQLUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static minigram.MiniGram.dbManager;
+import static minigram.utils.SQLUtils.sanitize;
 
 
 public class Account extends BaseModel {
@@ -185,5 +187,26 @@ public class Account extends BaseModel {
 
     public static String genToken(Account account) {
         return new String(EncryptionUtils.generateSalt(64));
+    }
+
+    public static Boolean create(Account account) {
+
+        try {
+            String query = "INSERT INTO accounts (name, profile_pic, email, password_hash, password_salt, following_ids) VALUES ('%name%', '%profile_pic%', '%email%', '%password_hash%', '%password_salt%', '%following_ids%');"
+                    .replaceAll("%name%", sanitize(account.name))
+                    .replaceAll("%profile_pic%", account.profile_pic == null ? "" : account.profile_pic)
+                    .replaceAll("%email%", account.email)
+                    .replaceAll("%password_hash%", account.password_hash)
+                    .replaceAll("%password_salt%", account.password_salt)
+                    .replaceAll("%following_ids%", account.following_ids != null && account.following_ids.length > 0 ? sanitize(String.join(", ", account.following_ids)) : "");
+            Statement statement = dbManager.getConnection().createStatement();
+            statement.execute(query);
+
+            return true;
+        } catch (NullPointerException | SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

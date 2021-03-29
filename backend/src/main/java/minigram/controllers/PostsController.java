@@ -132,7 +132,7 @@ public class PostsController {
                 .check(obj -> obj.likes_ids.length-1 <= 0 , "likes_ids should be empty")
                 .check(obj -> obj.comments_ids.length-1 <= 0 , "comments_ids should be empty")
                 .check(obj -> Integer.parseInt(obj.posted_by_id)  > 0, "posted_by_id should be greater than 0")
-                .check(obj -> Account.getAccountById(obj.posted_by_id)  != null, "posted by account does not exist");;
+                .check(obj -> Account.getAccountById(obj.posted_by_id)  != null, "posted by account does not exist");
 
 //        Merges all errors from all validators in the list. Empty map if no errors exist.
         Map<String, List<String>> errors = Validator.collectErrors(comment);

@@ -85,7 +85,8 @@ public class AccountController {
 
 //        validate
         Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0.");
+                .check(n -> n > 0, "id should be greater than 0.")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account Not Found");
 //        collect errors
         Map<String, List<String>> errors = stringValidator.errors();
 
@@ -97,14 +98,7 @@ public class AccountController {
 
         String id = ctx.pathParam("id");
 
-        Account account = new Account();
-
-        account = Account.getAccountById(id);
-
-        if (account == null){
-            ctx.contentType("application/json").status(404).result(responseMessage("Account Not Found"));
-            return;
-        }
+        Account account = Account.getAccountById(id);
 
         ctx.contentType("application/json").status(200).result(GSON.toJson(account));
     };
@@ -144,7 +138,9 @@ public class AccountController {
     public static Handler updateAccount = ctx -> {
         //        validate
         Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0.");
+                .check(n -> n > 0, "id should be greater than 0.")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account Not Found");
+
 //        collect errors
         Map<String, List<String>> errors = stringValidator.errors();
 
@@ -185,7 +181,9 @@ public class AccountController {
 
 //        validate
         Validator<Integer> stringValidator = ctx.pathParam("id", Integer.class)
-                .check(n -> n > 0, "id should be greater than 0.");
+                .check(n -> n > 0, "id should be greater than 0.")
+                .check(n -> Account.getAccountById(n.toString()) != null, "Account Not Found");
+
 //        collect errors
         Map<String, List<String>> errors = stringValidator.errors();
 
@@ -199,9 +197,7 @@ public class AccountController {
 
         Account account = Account.getAccountById(id);
 
-        Boolean accountDeleted = Account.delete(id);
-
-        if (accountDeleted){
+        if (Account.delete(id)){
             ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(account)));
             return;
         }
