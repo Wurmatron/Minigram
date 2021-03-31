@@ -71,6 +71,7 @@ class Profile extends React.Component {
                     .then(function (response){
                         if(response.status === 200){
                             console.log(response);
+                            self.setUpPosts(response);
                         }
                     })
                     .catch(function (error){

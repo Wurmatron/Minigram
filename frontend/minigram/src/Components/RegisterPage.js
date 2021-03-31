@@ -1,40 +1,24 @@
 /*
-    Component for the Login page, this is the first thing any user should see when going to the site
+    Near identical to LoginPage, a user is sent here after they select to register for an account. 
 */
+
 
 import React, {Component} from 'react';
 import axios from "axios";
 import { withRouter } from 'react-router-dom'
 import '../App.css'
 
-
-class LoginPage extends React.Component{
-    constructor(props) {
-        super(props);
+class RegisterPage extends React.Component {
+    constructor(props){
+        super(props)
 
         this.state = {
-            email: '',
-            password: '',
-        };
+            name : "",
+        }
 
         this.loginHandler = this.loginHandler.bind(this);
         this.registerHandler = this.registerHandler.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
-    }
-
-    //The next three functions all set state in the App.js component and the first two also reroute the user to a different page
-    tokenHandler(token) {
-        this.props.setToken(token);
-        this.props.history.push("/profile")
-    }
-
-    emailAndPassHandler(email , pass) {
-        this.props.setEmailAndPass(email , pass)
-        this.props.history.push("/register")
-    }
-
-    idHandler(id){
-        this.props.setLoggedInId(id);
     }
 
     //Updates state as user enters in on a form
@@ -44,15 +28,24 @@ class LoginPage extends React.Component{
         this.setState({[name] : val});
     }
 
-    //Handles login for the user
+    //The next two both update state in the App.js component tokenHandler also 
+    tokenHandler(token) {
+        this.props.setToken(token);
+        this.props.history.push("/profile")
+    }
+
+    idHandler(id){
+        this.props.setLoggedInId(id);
+    }
+
     loginHandler = () => {
-        //Need to assign this to a variable or you can't call functions in response to a request
+        //Need to assign this to a variable or you can't call method after request
         let self = this;
-        const response = axios.post('http://localhost:8080/login' , {email: this.state.email , password_hash: this.state.password})
+        const response = axios.post('http://localhost:8080/login' , {email: this.props.email , password_hash: this.props.pass})
             .then(function (response){
                 if(response.status === 200){
-                    self.idHandler(response.data.data.id);
                     self.tokenHandler(response.data.data.token);
+                    self.idHandler(response.data.data.id);
                 }
             })
             .catch(function (error) {
@@ -61,13 +54,20 @@ class LoginPage extends React.Component{
         this.tokenHandler(this.state.token);
     }
 
-
-    //Calls emailAndPassHandler to send the user to "/register"
     registerHandler = () => {
-        this.emailAndPassHandler(this.state.email , this.state.password);
+        let self = this;
+        const response = axios.post('http://localhost:8080/register' , {name: this.state.name , email: this.props.email , password_hash: this.props.pass})
+            .then(function (response){
+                console.log(response)
+                if(response.status === 201){
+                    self.loginHandler()
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
 
-        
     render(){
 		return (
             <div>
@@ -81,14 +81,17 @@ class LoginPage extends React.Component{
                         <form className="col-12">
                             <div className="form-group">
                                 <label for="email">Email</label>
-                                <input type="text" className="form-control" id="email" onChange={this.changeHandler}/>
+                                <input type="text" className="form-control" id="email" placeholder={this.props.email} readOnly/>
                             </div>
                             <div className="form-group">
                                 <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" onChange={this.changeHandler}/>
+                                <input type="password" class="form-control" id="password" readOnly/>
                             </div>
-                            <button type="button" class="btn btn-primary" onClick={this.loginHandler}>Login</button>
-                            <button type="button" class="btn btn-primary float-right" onClick={this.registerHandler}>Register</button>
+                            <div className="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" class="form-control" id="name" onChange={this.changeHandler}/>
+                            </div>
+                            <button type="button" class="btn btn-primary" onClick={this.registerHandler}>Register</button>
                         </form>
                     </div>
                 </div>
@@ -97,4 +100,4 @@ class LoginPage extends React.Component{
 	}
 }
 
-export default withRouter(LoginPage);
+export default withRouter(RegisterPage);
