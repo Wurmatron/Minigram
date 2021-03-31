@@ -4,20 +4,13 @@ import com.google.gson.JsonSyntaxException;
 import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.plugin.openapi.annotations.*;
-import joptsimple.internal.Strings;
 import minigram.models.Account;
-import minigram.models.Comment;
 import minigram.models.Post;
-import minigram.utils.SQLUtils;
 
-import java.sql.Array;
-import java.sql.Statement;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
 import static minigram.MiniGram.GSON;
-import static minigram.MiniGram.dbManager;
 import static minigram.utils.HttpUtils.*;
 
 public class PostsController {
@@ -25,6 +18,7 @@ public class PostsController {
     @OpenApi(
             summary = "Get Posts",
             description = "Get Posts",
+            queryParams = {@OpenApiParam(name = "accountID",description = "Filters posts by account")},
             responses = {
                     @OpenApiResponse(status = "200", description = "Get posts", content = @OpenApiContent(from = Post[].class)),
                     @OpenApiResponse(status = "401", description = "Invalid Session Key"),
@@ -32,8 +26,16 @@ public class PostsController {
             tags = {"Posts"}
     )
     public static Handler fetchPosts = ctx -> {
-        List<Post> posts;
-        posts = Post.getPosts();
+        List<Post> posts = Post.getPosts();
+        // Remove Non Account ID Posts if there is accountID in the query param
+        String accountID = ctx.queryParam("accountID");
+        if (accountID != null && !accountID.isEmpty()) {
+            for (int index = 0; index < posts.size(); index++) {
+                if (!posts.get(index).posted_by_id.equals(accountID)) {
+                    posts.remove(index);
+                }
+            }
+        }
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(posts.toArray(new Post[0]))));
     };
     @OpenApi(
@@ -60,7 +62,7 @@ public class PostsController {
             summary = "Update post",
             description = "Update post",
             requestBody = @OpenApiRequestBody(content = @OpenApiContent(from = Account.class)),
-            pathParams = {@OpenApiParam(name = "id", required = true,description = "Post ID")},
+            pathParams = {@OpenApiParam(name = "id", required = true, description = "Post ID")},
             responses = {
                     @OpenApiResponse(status = "201", description = "Post Found, Requested data is returned"),
                     @OpenApiResponse(status = "401", description = "Unauthorized, Invalid Session"),
@@ -72,7 +74,7 @@ public class PostsController {
     public static Handler updatePost = ctx -> {
         String id = ctx.pathParam("id");
         Post post = GSON.fromJson(ctx.body(), Post.class);
-        if(!post.id.equals(id)) {
+        if (!post.id.equals(id)) {
             ctx.contentType("application/json").status(422).result(responseData("Post ID and Path don't match (" + id + ", " + post.id + ")"));
             return;
         }
@@ -129,16 +131,16 @@ public class PostsController {
                 .check(obj -> obj.text != null, "text should not be null")
                 .check(obj -> obj.image != null, "image should not be null")
                 .check(obj -> obj.text.length() <= 255, "comment text length should at least be between 1 and 255 characters long")
-                .check(obj -> obj.likes_ids.length-1 <= 0 , "likes_ids should be empty")
-                .check(obj -> obj.comments_ids.length-1 <= 0 , "comments_ids should be empty")
-                .check(obj -> Integer.parseInt(obj.posted_by_id)  > 0, "posted_by_id should be greater than 0")
-                .check(obj -> Account.getAccountById(obj.posted_by_id)  != null, "posted by account does not exist");
+                .check(obj -> obj.likes_ids.length - 1 <= 0, "likes_ids should be empty")
+                .check(obj -> obj.comments_ids.length - 1 <= 0, "comments_ids should be empty")
+                .check(obj -> Integer.parseInt(obj.posted_by_id) > 0, "posted_by_id should be greater than 0")
+                .check(obj -> Account.getAccountById(obj.posted_by_id) != null, "posted by account does not exist");
 
 //        Merges all errors from all validators in the list. Empty map if no errors exist.
         Map<String, List<String>> errors = Validator.collectErrors(comment);
 
 //        return validation errors if there is any
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             ctx.contentType("application/json").status(422).result(validationErrors(GSON.toJson(errors)));
             return;
         }
