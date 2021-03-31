@@ -4,17 +4,14 @@ import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.plugin.openapi.annotations.*;
 import minigram.models.Account;
-import minigram.models.Post;
 import minigram.utils.EncryptionUtils;
 
-import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static minigram.MiniGram.GSON;
-import static minigram.MiniGram.dbManager;
 import static minigram.utils.HttpUtils.*;
 import static minigram.utils.SQLUtils.sanitize;
 
@@ -204,21 +201,4 @@ public class AccountController {
         ctx.contentType("application/json").status(404).result(responseMessage("Account Not Found"));
     };
 
-    private static boolean isValidAccount(Account account) {
-        if (sanitize(account.name).isEmpty()) {
-            return false;
-        }
-        if (sanitize(account.email).isEmpty() || !EMAIL_REGEX.matcher(account.email).find()) {
-            return false;
-        }
-        try {
-            Account acc = Account.getAccountById(account.name);
-            if(acc.id == null) {
-               return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return !account.password_hash.isEmpty() && !account.password_salt.isEmpty();
-    }
 }
