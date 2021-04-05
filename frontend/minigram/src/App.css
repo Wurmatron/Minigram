@@ -17,4 +17,6 @@
 .profileImgs{
   max-width: 228px;
   max-height: 228px;
+  min-width: 228px;
+  max-height: 228px;
 }

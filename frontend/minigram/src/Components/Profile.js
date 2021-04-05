@@ -40,6 +40,39 @@ class Profile extends React.Component {
         this.setState({followerTotal : response.data.length})
     }
 
+    setUpPosts = (posts) => {
+        const half = Math.ceil(posts.length / 2)
+        const firstHalf = posts.splice(0 , half)
+        const secHalf = posts.splice(-half)
+
+        let firstRow = []
+        let secRow =[]
+
+        firstHalf.forEach(post => {
+            let base64 = "data:image/png;base64," + post.image
+            firstRow.push(
+                <div className="col-sm text-center my-2">
+                    <img src={base64}  className="profileImgs"/>
+                </div>
+            )
+        })
+
+        secHalf.forEach(post => {
+            let base64 = "data:image/png;base64," + post.image
+            secRow.push(
+                <div className="col-sm text-center my-2">
+                    <img src={base64}  className="profileImgs"/>
+                </div>
+            ) 
+        })
+
+        this.setState({
+            firstRow : firstRow,
+            secRow : secRow,
+        })
+
+    }
+
     //This runs after the profile component receives its props from App.js
     componentDidUpdate(prevProps){
         if(this.props != prevProps && this.props.loggedId !== ""){
@@ -70,8 +103,8 @@ class Profile extends React.Component {
                 axios.get(url)
                     .then(function (response){
                         if(response.status === 200){
-                            console.log(response);
-                            self.setUpPosts(response);
+                            console.log(response.data.data);
+                            self.setUpPosts(response.data.data);
                         }
                     })
                     .catch(function (error){
@@ -92,8 +125,7 @@ class Profile extends React.Component {
                         <div className="row ml-1 align-items-center justify-content-center">
                             <p className="h2 ml-2">{this.state.profName}</p>
                             <button className="btn btn-primary btn-sm mx-5">Follow</button>
-                            <p className="mx-3">0 Posts</p>
-                            <p className="mx-3">0 Followers</p>
+                            <p className="mx-3">{this.state.followerTotal} Followers</p>
                             <p className="mx-3">{this.state.followingTotal + " Following"}</p>
                         </div>
                     </div>
@@ -101,25 +133,9 @@ class Profile extends React.Component {
                 </div>
                 <div className="container h-100 justify-content-center align-items-center">
                     <div className="row mt-5">
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs"/>
-                        </div>
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs"/>
-                        </div>
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs"/>
-                        </div>
+                        {this.state.firstRow}
                         <div className="w-100 my-5"></div>
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs"/>
-                        </div>
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs"/>
-                        </div>
-                        <div className="col-sm text-center">
-                            <img src={testImg} className="profileImgs" />
-                        </div>
+                        {this.state.secRow}
                     </div>
                 </div>
             </div>
