@@ -81,7 +81,6 @@ class Profile extends React.Component {
                 axios.get(url , {id: this.props.loggedId})
                     .then(function (response){
                         if(response.status === 200){
-                            console.log(response);
                             self.setUpNameAndFollowing(response);
                         }
                     })
@@ -92,7 +91,6 @@ class Profile extends React.Component {
                 axios.get(url , {id : this.props.loggedId , token : this.props.sesToken})
                     .then(function (response){
                         if(response.status === 200){
-                            console.log(response);
                             self.setUpFollwers(response);
                         }
                     })
@@ -103,7 +101,42 @@ class Profile extends React.Component {
                 axios.get(url)
                     .then(function (response){
                         if(response.status === 200){
-                            console.log(response.data.data);
+                            self.setUpPosts(response.data.data);
+                        }
+                    })
+                    .catch(function (error){
+                        console.log(error);
+                    })
+        }
+    }
+
+    componentDidMount(){
+        if(this.props.loggedId !== ""){
+            let url = 'http://localhost:8080/account/' + this.props.loggedId;
+                let self = this;
+                axios.get(url , {id: this.props.loggedId})
+                    .then(function (response){
+                        if(response.status === 200){
+                            self.setUpNameAndFollowing(response);
+                        }
+                    })
+                    .catch(function (error){
+                        console.log(error)
+                    });
+                url ='http://localhost:8080/accounts/' + this.props.loggedId + "/followers"
+                axios.get(url , {id : this.props.loggedId , token : this.props.sesToken})
+                    .then(function (response){
+                        if(response.status === 200){
+                            self.setUpFollwers(response);
+                        }
+                    })
+                    .catch(function (error){
+                        console.log(error);
+                    });
+                url = 'http://localhost:8080/posts?accountID=' + this.props.loggedId
+                axios.get(url)
+                    .then(function (response){
+                        if(response.status === 200){
                             self.setUpPosts(response.data.data);
                         }
                     })

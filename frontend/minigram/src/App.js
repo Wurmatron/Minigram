@@ -9,6 +9,7 @@ import LoginPage from './Components/LoginPage'
 import Profile from './Components/Profile'
 import RegisterPage from './Components/RegisterPage'
 import PostPage from './Components/PostPage'
+import Feed from './Components/Feed'
 
 class App extends React.Component {
 	constructor(props) {
@@ -57,7 +58,11 @@ class App extends React.Component {
 					</Route>
 
 					<Route path="/post">
-						<PostPage loggedId = {this.state.loggedInId}/>
+						<PostPage sesToken = {this.state.sessionToken} loggedId = {this.state.loggedInId}/>
+					</Route>
+
+					<Route path="/feed">
+						<Feed sesToken = {this.state.sessionToken} loggedId={this.state.loggedInId}/>
 					</Route>
 				</div>
 			</Router>
