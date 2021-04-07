@@ -15,8 +15,20 @@
 }
 
 .profileImgs{
-  max-width: 228px;
-  max-height: 228px;
-  min-width: 228px;
-  max-height: 228px;
+  max-width: 300px;
+  max-height: 300px;
+  min-width: 300px;
+  min-height: 300px;
+}
+
+.feedImgs{
+  max-width: 400px;
+  max-height: 400px;
+  min-width: 400px;
+  min-height: 400px;
+}
+
+.feedCards{
+  max-height: fit-content;
+  max-width: max-content;
 }
