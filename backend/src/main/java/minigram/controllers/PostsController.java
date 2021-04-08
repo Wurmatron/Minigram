@@ -9,6 +9,7 @@ import minigram.models.Post;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static minigram.MiniGram.GSON;
 import static minigram.utils.HttpUtils.*;
@@ -127,17 +128,17 @@ public class PostsController {
     )
     public static Handler createPost = ctx -> {
 //        validate
-        Validator<Post> comment = ctx.bodyValidator(Post.class)
-                .check(obj -> obj.text != null, "text should not be null")
-                .check(obj -> obj.image != null, "image should not be null")
-                .check(obj -> obj.text.length() <= 255, "comment text length should at least be between 1 and 255 characters long")
+        Validator<Post> post = ctx.bodyValidator(Post.class)
+                .check(obj -> obj.text != null && !Objects.requireNonNull(obj.text).isEmpty(), "text should not be empty")
+                .check(obj -> obj.image != null && !Objects.requireNonNull(obj.image).isEmpty(), "image should not be empty")
+                .check(obj -> obj.text.length() <= 255, "post text length should at least be between 1 and 255 characters long")
                 .check(obj -> obj.likes_ids.length - 1 <= 0, "likes_ids should be empty")
                 .check(obj -> obj.comments_ids.length - 1 <= 0, "comments_ids should be empty")
                 .check(obj -> Integer.parseInt(obj.posted_by_id) > 0, "posted_by_id should be greater than 0")
                 .check(obj -> Account.getAccountById(obj.posted_by_id) != null, "posted by account does not exist");
 
 //        Merges all errors from all validators in the list. Empty map if no errors exist.
-        Map<String, List<String>> errors = Validator.collectErrors(comment);
+        Map<String, List<String>> errors = Validator.collectErrors(post);
 
 //        return validation errors if there is any
         if (!errors.isEmpty()) {
@@ -145,11 +146,11 @@ public class PostsController {
             return;
         }
 
-        Post post = GSON.fromJson(ctx.body(), Post.class);
+        Post new_post = GSON.fromJson(ctx.body(), Post.class);
 
         try {
 
-            if (Post.create(post)) {
+            if (Post.create(new_post)) {
                 ctx.contentType("application/json").status(201).result(responseData(GSON.toJson(post)));
             }
 
