@@ -115,8 +115,8 @@ public class FeedController {
             }
         }
         try {
-            posts.sort(Comparator.comparingLong(e -> Long.parseLong(e.timestamp)));
-            for (Post post : posts) {
+            userPosts.sort(Comparator.comparingLong(e -> Long.parseLong(e.timestamp)));
+            for (Post post : userPosts) {
                 feed.add(createEntry(post));
             }
         } catch (Exception e) {
