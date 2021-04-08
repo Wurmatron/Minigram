@@ -87,7 +87,6 @@ public class Post extends BaseModel {
         return post;
     }
 
-//    TODO: Test
     public static Boolean deletePost(String id){
         String query  = "DELETE FROM posts WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
 

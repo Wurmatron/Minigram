@@ -26,7 +26,6 @@ public class Comment extends BaseModel {
         this.timestamp = timestamp;
     }
 
-    //    TODO: Test
     public static List<Comment> getComments(){
         String query = "SELECT * FROM comments";
         List<Comment> comments = new ArrayList<>();
@@ -47,7 +46,6 @@ public class Comment extends BaseModel {
         return comments;
     }
 
-//    TODO: Test
     public static Comment getCommentById(String id){
 
         Comment comment = new Comment();
@@ -67,7 +65,6 @@ public class Comment extends BaseModel {
         return null;
     }
 
-//    TODO: Test
     public static Boolean deleteComment(String id){
         String query  = "DELETE FROM comments WHERE id='%id%' LIMIT 1;".replaceAll("%id%", SQLUtils.sanitize(id));
 

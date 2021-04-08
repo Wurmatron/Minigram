@@ -37,13 +37,16 @@ public class FeedController {
             queryParams = {
                     @OpenApiParam(name = "start", type = Integer.class, description = "Starting message"),
                     @OpenApiParam(name = "end", type = Integer.class, description = "Ending message"),
+                    @OpenApiParam(name = "followers", type = Boolean.class, description = "disableFollowers")
             },
             tags = {"Feed"}
     )
-    // TODO Test
     public static Handler feed = ctx -> {
         String token = ctx.header("token");
         Account account = null;
+        boolean followers = true;
+        if (!ctx.queryParam("followers", "").isEmpty())
+            followers = Boolean.parseBoolean(ctx.queryParam("followers"));
         if (token != null && !token.isEmpty())
             account = AuthController.tokens.getOrDefault(token, null);
         if (account != null) {
@@ -62,13 +65,13 @@ public class FeedController {
                         ? "(Too many posts, You: " + (endPos - startPos) + ", Max: " + MAX_POST_COUNT + ")" : "")));
                 return;
             }
-            ctx.contentType("application/json").status(201).result(GSON.toJson(getFeed(token, startPos, endPos)));
+            ctx.contentType("application/json").status(201).result(GSON.toJson(getFeed(token, startPos, endPos, followers)));
         } else {
             ctx.contentType("application/json").status(401).result(responseMessage("No Account associated with the given token!"));
         }
     };
 
-    public static List<FeedEntry> getFeed(String userToken, int start, int end) {
+    public static List<FeedEntry> getFeed(String userToken, int start, int end, boolean followers) {
         // Check cache
         if (sortedFeed.containsKey(userToken) && sortedFeed.get(userToken).length >= (end - start)) {
             try {
@@ -86,7 +89,7 @@ public class FeedController {
             }
         }
         // Generate / update the sorted list / cache
-        FeedEntry[] userFeed = generateOrUpdateFeed(userToken);
+        FeedEntry[] userFeed = generateOrUpdateFeed(userToken, followers);
         sortedFeed.remove(userToken);
         sortedFeed.put(userToken, userFeed);
         List<FeedEntry> feed = new ArrayList<>();
@@ -97,15 +100,18 @@ public class FeedController {
         return feed;
     }
 
-    public static FeedEntry[] generateOrUpdateFeed(String userToken) {
+    public static FeedEntry[] generateOrUpdateFeed(String userToken, boolean followersEnabled) {
         Account account = AuthController.tokens.get(userToken);
         List<FeedEntry> feed = new ArrayList<>();
         // TODO If have extra time, cache posts, keep updated log, lowers SQL requests a ton
         List<Post> posts = Post.getPosts();  // Not the best design, but ill work for a small project
-        // Remove unrelated posts
+        List<Post> userPosts = new ArrayList<>();
         for (int index = 0; index < posts.size(); index++) {
-            if (!posts.get(index).posted_by_id.equals(account.id) && !isFollowing(account, posts.get(index))) {
-                posts.remove(index);
+            Post post = posts.get(index);
+            if (post.posted_by_id.equals(account.id))
+                userPosts.add(post);
+            else if (followersEnabled && isFollowing(account, post)) {
+                userPosts.add(post);
             }
         }
         try {

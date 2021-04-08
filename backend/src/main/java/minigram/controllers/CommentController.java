@@ -7,7 +7,6 @@ import io.javalin.plugin.openapi.annotations.*;
 import joptsimple.internal.Strings;
 import minigram.models.Account;
 import minigram.models.Comment;
-import minigram.models.Post;
 import minigram.utils.SQLUtils;
 
 import java.sql.Statement;
@@ -35,7 +34,6 @@ public class CommentController {
             tags = {"Comments"}
     )
 
-//    TODO: Implement
     public static Handler  fetchPostComments = ctx -> {
         List<Comment> comments;
         comments = Comment.getComments();
