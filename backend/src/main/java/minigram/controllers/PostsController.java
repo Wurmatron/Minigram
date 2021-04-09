@@ -75,13 +75,18 @@ public class PostsController {
     public static Handler updatePost = ctx -> {
         String id = ctx.pathParam("id");
         Post post = GSON.fromJson(ctx.body(), Post.class);
+        if(post == null || post.id == null) {
+            ctx.contentType("application/json").status(400).result(responseMessage("Post does not an id"));
+            return;
+        }
         if (!post.id.equals(id)) {
             ctx.contentType("application/json").status(422).result(responseData("Post ID and Path don't match (" + id + ", " + post.id + ")"));
             return;
         }
         if (Post.updatePost(post)) {
             FeedController.propagateUpdate(post);
-            ctx.contentType("application/json").status(201).result(GSON.toJson(post));
+            Post updatedDBPost =  Post.getPostById(id);
+            ctx.contentType("application/json").status(201).result(GSON.toJson(updatedDBPost));
         } else {
             ctx.contentType("application/json").status(404).result(responseMessage("Updating Account failed"));
         }

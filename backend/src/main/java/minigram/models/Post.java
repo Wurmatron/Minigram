@@ -1,6 +1,7 @@
 package minigram.models;
 
 import joptsimple.internal.Strings;
+import minigram.MiniGram;
 import minigram.controllers.FeedController;
 import minigram.utils.SQLUtils;
 
@@ -109,6 +110,7 @@ public class Post extends BaseModel {
     public static Boolean updatePost(Post post) throws NoSuchFieldException, IllegalAccessException {
         StringBuilder query = new StringBuilder();
         query.append("UPDATE posts SET ");
+        System.out.println("POST: " + MiniGram.GSON.toJson(post));
         for (String type : Post.POST_COLUMNS) {
             if (type.equalsIgnoreCase("id") || type.equalsIgnoreCase("posted_by_id"))
                 continue;
@@ -131,6 +133,7 @@ public class Post extends BaseModel {
         query = new StringBuilder();
         query.append(type);
         query.append(" WHERE id='%id%';".replaceAll("%id%", post.id));
+        System.out.println("Query: " + query.toString());
         try {
             Statement statement = dbManager.getConnection().createStatement();
             int set = statement.executeUpdate(query.toString());
