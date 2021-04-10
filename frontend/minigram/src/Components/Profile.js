@@ -19,7 +19,6 @@ class Profile extends React.Component {
             postTotal : " ",
             followerTotal : " ",
             followingTotal : " ",
-            posts : [],
         }
 
         this.setUpNameAndFollowing = this.setUpNameAndFollowing.bind(this);
@@ -97,11 +96,11 @@ class Profile extends React.Component {
                     .catch(function (error){
                         console.log(error);
                     });
-                url = 'http://localhost:8080/posts?accountID=' + this.props.loggedId
-                axios.get(url)
+                url = 'http://localhost:8080/feed?followers=false';
+                axios.get(url , {headers: {'token' : this.props.sesToken , accept: "application/json"}})
                     .then(function (response){
-                        if(response.status === 200){
-                            self.setUpPosts(response.data.data);
+                        if(response.status === 201){
+                            self.setUpPosts(response.data);
                         }
                     })
                     .catch(function (error){
@@ -133,11 +132,11 @@ class Profile extends React.Component {
                     .catch(function (error){
                         console.log(error);
                     });
-                url = 'http://localhost:8080/posts?accountID=' + this.props.loggedId
-                axios.get(url)
+                url = 'http://localhost:8080/feed?followers=false'
+                axios.get(url , {headers: {'token' : this.props.sesToken , accept: "application/json"}})
                     .then(function (response){
-                        if(response.status === 200){
-                            self.setUpPosts(response.data.data);
+                        if(response.status === 201){
+                            self.setUpPosts(response.data);
                         }
                     })
                     .catch(function (error){
