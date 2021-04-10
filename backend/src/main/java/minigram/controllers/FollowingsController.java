@@ -19,7 +19,7 @@ import java.util.Objects;
 import static minigram.MiniGram.GSON;
 import static minigram.utils.HttpUtils.*;
 
-public class FollowingsController extends BaseController {
+public class FollowingsController {
 
     public static NonBlockingHashMap<String, Account[]> followingCache = new NonBlockingHashMap<>();
 
@@ -49,22 +49,6 @@ public class FollowingsController extends BaseController {
             ctx.contentType("application/json").status(200).result(GSON.toJson(followingCache.get(id)));
         }
     };
-
-    public static void updateFollowing(String id) {
-        List<Account> accounts = Account.getAccounts();
-        List<Account> followingSelected = new ArrayList<>();
-        // Find followers from ID
-        for (Account account : accounts) {
-            for (String follow : account.following_ids) {
-                if (follow.equals(id)) {
-                    followingSelected.add(account);
-                    break;
-                }
-            }
-        }
-        followingCache.put(id, followingSelected.toArray(new Account[0]));
-    }
-
     @OpenApi(
             summary = "Get an accounts' followings",
             description = "Get all the accounts followed by this account",
@@ -109,7 +93,6 @@ public class FollowingsController extends BaseController {
 
         ctx.contentType("application/json").status(200).result(responseData(GSON.toJson(accounts)));
     };
-
     @OpenApi(
             summary = "Follow an account",
             description = "Follow a specific account",
@@ -121,7 +104,6 @@ public class FollowingsController extends BaseController {
             },
             tags = {"Followings"}
     )
-    //    TODO: implement
     public static Handler followAccount = ctx -> {
 //        validate
         Validator<String> token = ctx.header("token", String.class)
@@ -161,7 +143,6 @@ public class FollowingsController extends BaseController {
         ctx.contentType("application/json").status(201).result(responseMessage("Account with id " + friend_id.getValue() + " followed"));
 
     };
-
     @OpenApi(
             summary = "Unfollow an account",
             description = "Unfollow this user account",
@@ -200,16 +181,14 @@ public class FollowingsController extends BaseController {
 
 //      remove account account id from followings
         Account authAccount = AuthService.authAccount(ctx.header("token"));
+        String unfollowID = ctx.pathParam("unfollow_id");
 
-        if (authAccount != null) {
-            System.out.println("Before: " + (authAccount.following_ids.length - 1));
-            for (int i = 0; i < authAccount.following_ids.length - 1; i++) {
-                if (authAccount.following_ids[i].equals(friend_id.getValue().toString())) {
-                    removeElement(authAccount.following_ids, i);
-                    break;
-                }
-            }
+        List<String> followIDs = new ArrayList<>();
+        for (String followID : authAccount.following_ids) {
+            if (!followID.equals(unfollowID))
+                followIDs.add(followID);
         }
+        authAccount.following_ids = followIDs.toArray(new String[0]);
 
 //      unfollow/update account
         if (Account.updateAccount(authAccount)) {
@@ -220,5 +199,20 @@ public class FollowingsController extends BaseController {
 
         ctx.contentType("application/json").status(500).result(responseMessage("Something went wrong, please try again"));
     };
+
+    public static void updateFollowing(String id) {
+        List<Account> accounts = Account.getAccounts();
+        List<Account> followingSelected = new ArrayList<>();
+        // Find followers from ID
+        for (Account account : accounts) {
+            for (String follow : account.following_ids) {
+                if (follow.equals(id)) {
+                    followingSelected.add(account);
+                    break;
+                }
+            }
+        }
+        followingCache.put(id, followingSelected.toArray(new Account[0]));
+    }
 
 }
