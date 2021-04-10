@@ -20,10 +20,12 @@ class App extends React.Component {
 			loggedInId : "",
 			email : "",
 			pass : "",
+			profileToGoTo : "",
         };
 		this.setToken = this.setToken.bind(this);
 		this.setLoggedInId = this.setLoggedInId.bind(this);
 		this.setEmailAndPass = this.setEmailAndPass.bind(this);
+		this.setProfileToGoTo = this.setProfileToGoTo.bind(this);
 	}
 
 	setToken = (token) => {
@@ -41,28 +43,32 @@ class App extends React.Component {
 		})
 	}
 
+	setProfileToGoTo = (id) => {
+		this.setState({profileToGoTo : id});
+	}
+
 	render(){
 		return (
 			<Router >
 				<div>
 					<Route exact path="/" >
-						<LoginPage setToken = {this.setToken} setLoggedInId = {this.setLoggedInId} setEmailAndPass = {this.setEmailAndPass}/>
+						<LoginPage setToken = {this.setToken} setLoggedInId = {this.setLoggedInId} setEmailAndPass = {this.setEmailAndPass} setProfile = {this.setProfileToGoTo}/>
 					</Route>
 
 					<Route path="/register" >
-						<RegisterPage email = {this.state.email} pass = {this.state.pass} setToken = {this.setToken} setLoggedInId = {this.setLoggedInId}/>
+						<RegisterPage email = {this.state.email} pass = {this.state.pass} setToken = {this.setToken} setLoggedInId = {this.setLoggedInId} setProfile = {this.setProfileToGoTo}/>
 					</Route>
 
 					<Route path="/profile">
-						<Profile sesToken = {this.state.sessionToken} loggedId={this.state.loggedInId}/>
+						<Profile sesToken = {this.state.sessionToken} loggedId={this.state.loggedInId} setProfile={this.setProfileToGoTo} profileToGoTo={this.state.profileToGoTo}/>
 					</Route>
 
 					<Route path="/post">
-						<PostPage sesToken = {this.state.sessionToken} loggedId = {this.state.loggedInId}/>
+						<PostPage sesToken = {this.state.sessionToken} loggedId = {this.state.loggedInId} setProfile={this.setProfileToGoTo}/>
 					</Route>
 
 					<Route path="/feed">
-						<Feed sesToken = {this.state.sessionToken} loggedId={this.state.loggedInId}/>
+						<Feed sesToken = {this.state.sessionToken} loggedId={this.state.loggedInId} setProfile = {this.setProfileToGoTo}/>
 					</Route>
 				</div>
 			</Router>

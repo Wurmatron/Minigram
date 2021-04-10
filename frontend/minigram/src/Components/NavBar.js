@@ -21,6 +21,7 @@ class Navbar extends React.Component{
         if(this.props.location.pathname === "/profile"){
             this.props.history.push("/feed")
         }else{
+            this.props.setProfile(this.props.loggedId)
             this.props.history.push("/profile")
         }
     }

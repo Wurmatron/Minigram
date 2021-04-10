@@ -36,6 +36,7 @@ class RegisterPage extends React.Component {
 
     idHandler(id){
         this.props.setLoggedInId(id);
+        this.props.setProfile(id);
     }
 
     loginHandler = () => {

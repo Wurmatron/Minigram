@@ -23,7 +23,7 @@ class PostPage extends React.Component{
     }
 
     successfulUpload(){
-        this.props.history.push("/profile")
+        this.props.history.push("/feed")
     }
 
     uploadPost = () => {
@@ -62,7 +62,7 @@ class PostPage extends React.Component{
     render(){
         return(
             <div>
-                <Navbar/>
+                <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
                 <div className="container h-100 mt-2">
                     <div className="row h-100 justify-content-center align-items-center">
                         <form className="col-12">

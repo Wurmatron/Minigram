@@ -35,6 +35,7 @@ class LoginPage extends React.Component{
 
     idHandler(id){
         this.props.setLoggedInId(id);
+        this.props.setProfile(id);
     }
 
     //Updates state as user enters in on a form

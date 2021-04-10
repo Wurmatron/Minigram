@@ -18,6 +18,7 @@ class Feed extends React.Component{
         };
 
         this.likeHandler = this.likeHandler.bind(this);
+        this.goToProfile = this.goToProfile.bind(this);
     }
 
     //Get the post first then edit the likedID to add or remove the loggedIn user then put with the update likes
@@ -52,6 +53,11 @@ class Feed extends React.Component{
         }
     }
 
+    goToProfile = (e) => {
+        this.props.setProfile(e.target.id);
+        this.props.history.push("/profile")
+    }
+
     async componentDidMount(){
         if(this.props.loggedId !== ""){
             let url = "http://localhost:8080/feed?followers=true";
@@ -80,7 +86,7 @@ class Feed extends React.Component{
                 if(!post.likes_ids[0].includes(this.props.loggedId)){
                     postArray.push(
                         <div className="card my-5 mx-auto text-center feedCards">
-                            <div className="card-header">
+                            <div className="card-header" id={post.posted_by_id} onClick={this.goToProfile}>
                                     {this.state.lastPostedBy}
                             </div>
                             <img className="card-img-top feedImgs" src={base64} />
@@ -93,7 +99,7 @@ class Feed extends React.Component{
                 }else{
                     postArray.push(
                         <div className="card my-5 mx-auto text-center feedCards">
-                            <div className="card-header">
+                            <div className="card-header" id={post.posted_by_id} onClick={this.goToProfile}>
                                     {this.state.lastPostedBy}
                             </div>
                             <img className="card-img-top feedImgs" src={base64} />
@@ -115,7 +121,7 @@ class Feed extends React.Component{
         if(this.state != null){
             return(
                 <div>
-                    <Navbar/>
+                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
                     <div className="container h-100 justify-content-center align-items-center">
                         <div className="col-lg justify-content-center align-items-center">
                             {this.state.feedPosts}
@@ -126,7 +132,7 @@ class Feed extends React.Component{
         }else{
             return(
                 <div>
-                    <Navbar/>
+                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
                     <div className="container h-100 justify-content-center align-items-center">
 
                     </div>
@@ -137,4 +143,4 @@ class Feed extends React.Component{
     }
 }
 
-export default Feed;
+export default withRouter(Feed);
