@@ -62,7 +62,7 @@ class PostPage extends React.Component{
     render(){
         return(
             <div>
-                <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                 <div className="container h-100 mt-2">
                     <div className="row h-100 justify-content-center align-items-center">
                         <form className="col-12">

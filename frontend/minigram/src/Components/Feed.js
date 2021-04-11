@@ -121,7 +121,7 @@ class Feed extends React.Component{
         if(this.state != null){
             return(
                 <div>
-                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                     <div className="container h-100 justify-content-center align-items-center">
                         <div className="col-lg justify-content-center align-items-center">
                             {this.state.feedPosts}
@@ -132,7 +132,7 @@ class Feed extends React.Component{
         }else{
             return(
                 <div>
-                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                     <div className="container h-100 justify-content-center align-items-center">
 
                     </div>

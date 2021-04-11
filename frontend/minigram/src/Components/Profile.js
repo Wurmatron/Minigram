@@ -33,7 +33,7 @@ class Profile extends React.Component {
         if(response.data.following_ids[0] === ""){
             this.setState({followingTotal : "0"})
         }else{
-            this.setState({followingTotal : response.data.following_ids.length})
+            this.setState({followingTotal : response.data.following_ids[0].split(",").length-1})
         }
     }
 
@@ -264,7 +264,7 @@ class Profile extends React.Component {
         if(this.props.loggedId === this.props.profileToGoTo){
             return( 
                 <div>
-                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                    <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                     <div className="container">
                         <div className="row align-items-center">
                             <div className="align-left">
@@ -291,7 +291,7 @@ class Profile extends React.Component {
             if(this.isFollowing()){
                 return( 
                     <div>
-                        <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                        <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                         <div className="container">
                             <div className="row align-items-center">
                                 <div className="align-left">
@@ -317,7 +317,7 @@ class Profile extends React.Component {
             }else{
                 return( 
                     <div>
-                        <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId}/>
+                        <Navbar setProfile = {this.props.setProfile} loggedId={this.props.loggedId} sesToken = {this.props.sesToken}/>
                         <div className="container">
                             <div className="row align-items-center">
                                 <div className="align-left">
