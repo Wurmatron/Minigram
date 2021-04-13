@@ -4,12 +4,12 @@ import minigram.models.Config;
 
 import java.sql.*;
 
-public class DatabaseController {
+public class DatabaseManager {
 
     private Config.Database config;
     private Connection connection;
 
-    public DatabaseController(Config.Database config) {
+    public DatabaseManager(Config.Database config) {
         this.config = config;
         connect();
     }

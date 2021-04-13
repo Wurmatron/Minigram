@@ -3,16 +3,26 @@ package minigram;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.sun.net.httpserver.HttpServer;
+import io.javalin.Javalin;
+import io.javalin.http.util.RedirectToLowercasePathPlugin;
+import io.javalin.plugin.openapi.OpenApiOptions;
+import io.javalin.plugin.openapi.OpenApiPlugin;
+import io.javalin.plugin.openapi.ui.SwaggerOptions;
+import io.swagger.v3.oas.models.info.Info;
+import minigram.endpoints.EndpointSecurity;
 import minigram.models.Config;
-import minigram.sql.DatabaseController;
-import minigram.utils.AnnotationHelper;
+import minigram.sql.DatabaseManager;
+import minigram.utils.anotations.Endpoint;
+import org.reflections8.Reflections;
+import org.reflections8.scanners.MethodAnnotationsScanner;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,11 +34,12 @@ public class MiniGram {
 
     // Program vars
     public static Config config;
-    public static HttpServer server;
-    public static DatabaseController controller;
+    public static Javalin server;
+    public static DatabaseManager dbManager;
 
     // Global Instances
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Reflections REFLECTIONS = new Reflections("minigram", new MethodAnnotationsScanner());
     public static ScheduledExecutorService SCHEDULED_EXEC;
     public static ExecutorService EXEC;
 
@@ -42,22 +53,17 @@ public class MiniGram {
         SCHEDULED_EXEC = Executors.newScheduledThreadPool(config.preformance.schedule_threads);
         EXEC = Executors.newFixedThreadPool(config.preformance.general_threads);
 
-        // Discover Annotations / "Discovery"
-        AnnotationHelper.setup();
-
         // Setup Http Server
-        try {
-            server = HttpServer.create(new InetSocketAddress(config.general.port), 0);
-            server.setExecutor(EXEC);
-            AnnotationHelper.setupEndpoints(server);
-            System.out.println("Web server started on 'http://localhost:" + config.general.port + "'");
-            server.start();
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.exit(-3);
-        }
+        server = Javalin.create(conf -> {
+            conf.registerPlugin(new OpenApiPlugin(new OpenApiOptions(new Info().version("1.0.0").description("MiniGram Rest API")).path("/swagger-docs").swagger(new SwaggerOptions("/swagger").title("MiniGram Swagger")).roles(Collections.singleton(EndpointSecurity.AuthRoles.ADMIN))));
+            conf.registerPlugin(new RedirectToLowercasePathPlugin());
+            conf.enableCorsForAllOrigins();
+        });
+        server.start(config.general.port);
+        registerEndpoints();    // Locate and register all endpoints
+        server.get("/", ctx -> ctx.result("Hello World"));
         // Startup DB
-        controller = new DatabaseController(config.database);
+        dbManager = new DatabaseManager(config.database);
     }
 
     public static Config loadConfig() {
@@ -89,5 +95,20 @@ public class MiniGram {
             return config;
         }
         return null;
+    }
+
+    private static void registerEndpoints() {
+        Set<Method> endpoints = REFLECTIONS.getMethodsAnnotatedWith(Endpoint.class);
+        for (Method method : endpoints) {
+            if (method.getParameterCount() == 1 && method.getParameterTypes()[0] == Javalin.class)
+                try {
+                    method.invoke(method.getDeclaringClass().newInstance(), server);
+                    if (config.general.debug) {
+                        System.out.println("Registering endpoint '" + method.getName() + "@" + method.getDeclaringClass().getName() + "'");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to register endpoint '" + method.getName() + "@" + method.getDeclaringClass().getName() + "'");
+                }
+        }
     }
 }
