@@ -1,13 +1,13 @@
 # Minigram | Backend
 
 ## API Testing
-- This service has included [swagger]() wich is a web platform for API documentation.
+- This service has included [swagger](https://swagger.io/solutions/api-documentation/) wich is a web platform for API documentation.
 - You can launch swagger by navigatign to the url below after starting your service
 
 `http://localhost:8080/swagger#/`
 
 ## Starting the Backend service
-- To start the backend service navigate to the (`MiniGram.java`)[https://github.com/Wurmatron/Minigram/blob/release/backend/src/main/java/minigram/MiniGram.java] file and run the main function. This will start up a service on `port 8080` 
+- To start the backend service navigate to the [`MiniGram.java`](https://github.com/Wurmatron/Minigram/blob/release/backend/src/main/java/minigram/MiniGram.java) file and run the main function. This will start up a service on `port 8080` 
 
 ## Database configuration
 - This service makes use of MySQL. 
